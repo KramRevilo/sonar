@@ -46,6 +46,11 @@ def root():
 @app.route('/index')
 def index():
   all_surveys = survey_service.get_all()
+
+  #size_array = []
+  #for survey in all_surveys:
+  #  size_array.append({survey.id,get_survey_responses(survey.id).shape})
+
   return render_template('index.html', all_surveys=all_surveys)
 
 
@@ -155,7 +160,9 @@ def inject_receiver_params():
       'receiver_url':
           os.environ.get(
               'RECEIVER_URL',
-              'https://us-central1-jerraldwee-testing.cloudfunctions.net/receiver'
+              #'https://us-central1-jerraldwee-testing.cloudfunctions.net/receiver'
+            #   'https://us-central1-brandometer-devel-testing.cloudfunctions.net/receiver'
+              'https://us-central1-sonar-testing-379823.cloudfunctions.net/receiver'
           )
   }
 
@@ -176,4 +183,5 @@ def is_brand_track(survey):
 
 
 if __name__ == '__main__':
-  app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=True)
+    # index()
