@@ -1,3 +1,8 @@
 .DS_Store
 *-credentials.json
 creative/app/*.yaml
+creative/app/list_ids.py
+lib
+bin
+pyvenv.cfg
+

@@ -224,32 +224,27 @@ def get_survey_responses(surveyid, client=None):
   return df
 
 
+def get_response_count_from_survey(survey):
+  """Get response count from survey"""
+  google.cloud.bigquery.magics.context.use_bqstorage_api = True
+  project_id = os.environ.get('PROJECT_ID')
+  table_id = os.environ.get('TABLE_ID')
+  client = bigquery.Client(project=project_id)
+  bqstorageclient = bigquery_storage.BigQueryReadClient()
+  survey_id = survey.id
+  query = f"""
+        SELECT CreatedAt, Segmentation, Response
+        FROM `{table_id}`
+        WHERE ID = @survey_id
+    """
+    # AND Segmentation != 'preview'
 
-# def get_response_count_from_survey(survey):
-
-#   """Get data from survey"""
-
-#   google.cloud.bigquery.magics.context.use_bqstorage_api = True
-#   project_id = os.environ.get('PROJECT_ID')
-#   table_id = os.environ.get('TABLE_ID')
-#   client = bigquery.Client(project=project_id)
-#   bqstorageclient = bigquery_storage.BigQueryReadClient()
-
-#   survey_id = (survey.to_dict())['survey_id']
-
-
-#   query = f"""
-#         SELECT CreatedAt, Segmentation, Response
-#         FROM `{table_id}`
-#         WHERE ID = @survey_id
-#     """
-#   job_config = bigquery.QueryJobConfig(query_parameters=[
-#       bigquery.ScalarQueryParameter('survey_id', 'STRING', surveyid),
-#   ])
-#   query_job = client.query(query, job_config=job_config)
-#   df = query_job.result().to_dataframe(bqstorage_client=bqstorageclient)
-#   return df.shape[0]
-
+  job_config = bigquery.QueryJobConfig(query_parameters=[
+      bigquery.ScalarQueryParameter('survey_id', 'STRING', survey_id),
+  ])
+  query_job = client.query(query, job_config=job_config)
+  df = query_job.result().to_dataframe(bqstorage_client=bqstorageclient)
+  return df.shape[0]
 
 
 def download_responses(surveyid):

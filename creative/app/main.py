@@ -46,12 +46,13 @@ def root():
 @app.route('/index')
 def index():
   all_surveys = survey_service.get_all()
+  size_array = []
+  for survey in all_surveys:
+    count = survey_service.get_response_count_from_survey(survey)
+    size_array.append({'id':survey.id,'count':count})
 
-  #size_array = []
-  #for survey in all_surveys:
-  #  size_array.append({survey.id,get_survey_responses(survey.id).shape})
-
-  return render_template('index.html', all_surveys=all_surveys)
+  all_surveys = survey_service.get_all()
+  return render_template('index.html', all_surveys=all_surveys, size_array=size_array)
 
 
 @app.route('/survey/create', methods=['GET', 'POST'])
