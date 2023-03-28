@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,6 +28,10 @@ BRAND_TRACK = 'brand_track'
 BRAND_LIFT = 'brand_lift'
 ANSWERS_ORDERED = 'ORDERED'
 ANSWERS_SHUFFLED = 'SHUFFLED'
+RESPONSES_AT_END = "Submit Responses at End of Survey"
+RESPONSES_IMMEDIATELY = "Submit Responses after each Question"
+
+# LANGUAGE_CHOICES = "'en', 'ms', 'zh', 'ja', 'ko'"
 
 def question_section_is_empty(form, questionNumber):
   """Check if any field of the question input including answer is empty."""
@@ -58,6 +62,7 @@ def validate_next_question(form, field):
 
 class QuestionForm(FlaskForm):
   """QuestionForm that takes in the survey creation parameters."""
+
   question1type = SelectField(
       'question1Type', choices=('SINGLE_OPTION', 'MULTIPLE_OPTION'))
   question2type = SelectField(
@@ -70,15 +75,22 @@ class QuestionForm(FlaskForm):
       'question5Type', choices=('SINGLE_OPTION', 'MULTIPLE_OPTION'))
   question_order_choices = [(ANSWERS_SHUFFLED, 'Shuffled'),
           (ANSWERS_ORDERED, 'Ordered')]
+
   question1order = SelectField('question1Order', choices=question_order_choices)
   question2order = SelectField('question2Order', choices=question_order_choices)
   question3order = SelectField('question3Order', choices=question_order_choices)
   question4order = SelectField('question4Order', choices=question_order_choices)
   question5order = SelectField('question5Order', choices=question_order_choices)
-  language = SelectField('language', choices=('en', 'ms', 'zh', 'ja', 'ko'))
+  language = SelectField('language', choices=('en', 'es', 'fr', 'ms', 'zh', 'ja', 'ko'))
   surveytype = SelectField('surveyType', choices=[(
     BRAND_LIFT, 'Brand Lift'), (BRAND_TRACK, 'Brand Track')])
   surveyname = StringField('surveyName', validators=[DataRequired()])
+
+  # adding responseType as a property of the survey
+  responsetype = SelectField('responseType', choices=[
+    (RESPONSES_AT_END, 'Submit Responses at End of Survey'),
+    (RESPONSES_IMMEDIATELY, 'Submit Responses after each Question')])
+
   question1 = StringField('question1', validators=[DataRequired()])
   answer1a = StringField('answer1a', validators=[DataRequired()])
   answer1b = StringField('answer1b', validators=[DataRequired()])

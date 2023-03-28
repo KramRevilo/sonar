@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,9 @@ from flask_bootstrap import Bootstrap
 import forms
 from forms import BRAND_TRACK
 import survey_service
+import datetime
 
+title = 'Sonar'
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'supersecretkey'
 Bootstrap(app)
@@ -36,6 +38,18 @@ app.config['BASIC_AUTH_USERNAME'] = os.environ.get('AUTH_USERNAME')
 app.config['BASIC_AUTH_PASSWORD'] = os.environ.get('AUTH_PASSWORD')
 basic_auth = BasicAuth(app)
 app.config['BASIC_AUTH_FORCE'] = True
+
+ACTIVE_DAYS = 3
+ACTIVE_COLOR = 'MediumSeaGreen'
+ACTIVE_TEXT = 'Responses within last 3 days'
+WARNING_DAYS = 7
+WARNING_COLOR = 'Orange'
+WARNING_TEXT = 'Responses within past one week'
+OLD_DAYS = 14
+OLD_COLOR = 'Tomato'
+OLD_TEXT = 'No response in 14 days'
+
+MRC_INIT = 999999999
 
 
 @app.route('/')
@@ -46,13 +60,40 @@ def root():
 @app.route('/index')
 def index():
   all_surveys = survey_service.get_all()
-  size_array = []
+  stat_array = []
   for survey in all_surveys:
-    count = survey_service.get_response_count_from_survey(survey)
-    size_array.append({'id':survey.id,'count':count})
+    segmentation_rows = survey_service.get_response_count_from_survey(survey)
 
+    # set high number for last update
+    most_recent_change = MRC_INIT
+    # build an array with stats for each segmentation, support up to 6 segmentations
+    segs = []
+    for x in range(0,6):
+        if x in segmentation_rows:
+            a = segmentation_rows[x]
+            if a['days_since_response'] < most_recent_change:
+                most_recent_change = a['days_since_response']
+            segs.append(a)
+
+    if most_recent_change <= ACTIVE_DAYS:
+        color = ACTIVE_COLOR
+        status_text = ACTIVE_TEXT
+    elif most_recent_change <= WARNING_DAYS:
+        color = WARNING_COLOR
+        status_text = WARNING_TEXT
+    else:
+        color = OLD_COLOR
+        status_text = OLD_TEXT
+
+    if most_recent_change == MRC_INIT:
+        most_recent_change = 'No responses'
+
+    stat_array.append({'id':survey.id,'stats':segs,'color':color,'last_change':most_recent_change,'status':status_text})
+
+  # print out list of all surveys, with stats for each segment
+  # print(f'finalized stat array: {stat_array}')
   all_surveys = survey_service.get_all()
-  return render_template('index.html', all_surveys=all_surveys, size_array=size_array)
+  return render_template('index.html', all_surveys=all_surveys, stat_array=stat_array)
 
 
 @app.route('/survey/create', methods=['GET', 'POST'])
@@ -115,7 +156,13 @@ def edit():
 def download_zip(survey_id):
   """Download zip of survey creative(s)."""
   survey_doc = survey_service.get_doc_by_id(survey_id)
+
+  # check the survey to see if it's of the type that needs an alternate creative
+
+  # this is the standard survey
   filename, data = survey_service.zip_file(survey_id, survey_doc.to_dict())
+
+
   return send_file(
       data,
       mimetype='application/zip',

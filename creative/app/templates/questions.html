@@ -18,10 +18,14 @@
       {{ form.surveytype(class="form-control") }}
     </p>
     <p>
-      <label for="language">Language</label>
-      {{ form.language(class="form-control") }}
+        <label for="language">Language</label>
+        {{ form.language(class="form-control") }}
     </p>
-
+    <p>
+    <label for="responsetype">Response Type</label>
+        {{ form.responsetype(class="form-control") }}
+    </p>
+    
     {% for n in range(1, 6) %}
     <hr />
     <div>

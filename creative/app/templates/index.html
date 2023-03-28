@@ -21,7 +21,6 @@ function sortTable(n,table_id) {
         /* Loop through all table rows (except the
         first, which contains table headers): */
         for (i = 1; i < (rows.length - 1); i++) {
-
             // Start by saying there should be no switching:
             shouldSwitch = false;
             /* Get the two elements you want to compare,
@@ -69,23 +68,30 @@ function sortTable(n,table_id) {
 <div class="container">
     <table id="mainTable" class="table table-bordered table-striped">
         <thead class="thead-light">
-            <tr>
+            <tr style='text-align:center;background-color:#337ab7;;color:white'>
                 <div style="cursor:pointer">
-                    <th scope="col" style="cursor:pointer;" onclick="sortTable(0,'mainTable')">Name</th>
-                    <th scope="col" style="cursor:pointer;" onclick="sortTable(1,'mainTable')">Questions</th>
-                    <th scope="col" style="cursor:pointer;" onclick="sortTable(2,'mainTable')">View</th>
-		            <th scope="col" style="cursor:pointer;" onclick="sortTable(3,'mainTable')">Response Count</th>
-                    <th scope="col" style="cursor:pointer;" onclick="sortTable(4,'mainTable')">Download</th>
-                    <th scope="col" style="cursor:pointer;" onclick="sortTable(5,'mainTable')">Actions</th>
+                    <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(0,'mainTable')">Survey Name</th>
+                    <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(1,'mainTable')">Survey ID</th>
+                    <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(2,'mainTable')">Survey Questions</th>
+                    <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(3,'mainTable')">View</th>
+		            <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(4,'mainTable')">Response Count</th>
+		            <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(5,'mainTable')">Last Response (days)</th>
+		            <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(6,'mainTable')">Status</th>
+                    <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(7,'mainTable')">Download</th>
+                    <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(8,'mainTable')">Actions</th>
                 </div>                
             </tr>
         </thead>
         <tbody>
         {% for survey in all_surveys %}
         <tr>
-            <td>{{ (survey.to_dict())['surveyname'] }}
+            <td style='background-color:white;color:black;text-align:center'>
+                {{ (survey.to_dict())['surveyname'] }}
             </td>
-            <td>
+            <td style='background-color:white;color:black;text-align:center'>
+                {{ survey.id }}
+            </td>
+            <td style='background-color:white;color:black;text-align:center'>
                 <table class="table">
                     <ol>
                         {% for question_text in survey | get_all_question_text %}
@@ -94,7 +100,7 @@ function sortTable(n,table_id) {
                     </ol>
                 </table>
             </td>
-            <td>
+            <td style='background-color:white;color:black;text-align:center'>
                 <form>
                     <a href="{{ url_for('preview', survey_id=survey.id) }}">
                         <button type="button" class="btn btn-link">
@@ -110,14 +116,41 @@ function sortTable(n,table_id) {
                     {% endif %}
                </form>
             </td>
-            <td align=center>
-                {% for item in size_array %}
-                    {% if item['id'] == survey.id %}
-                        {{ item['count'] }}
-                    {% endif %}
-                {% endfor %}
+            <td style="background-color:{%for item in stat_array%}{% if item['id']==survey.id %}{{item['color']}}{%endif%}{%endfor%};color:white;text-align:center">
+            {% for item in stat_array %}
+                {# is the current stat_array item id equal to the survey id? #}
+                {% if item['id'] == survey.id %}
+                    {# walk through the associated segmentation stats #}
+                    {% for seg in item['stats'] %}
+                        {# output the segmentation name and the response count for it #}
+                        {% if seg['Segmentation'] == '' %}
+                            {# Substitute '<Unnamed>'' when segment is blank #}
+                            &lt;Unnamed&gt;
+                        {% else %}
+                            {# Otherwise use segment name #}
+                            {{seg['Segmentation']}}
+                        {% endif %}
+                        {# Output the response count for this segment #}
+                        &nbsp;&colon;&nbsp;{{ seg['response_count'] }}<br>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
             </td>
-            <td>
+            <td style="background-color:{%for item in stat_array%}{% if item['id']==survey.id %}{{item['color']}}{%endif%}{%endfor%};color:white;text-align:center">
+            {% for item in stat_array %}
+                {% if item['id'] == survey.id %}
+                    {{ item['last_change'] }}
+                {% endif %}
+            {% endfor %}
+            </td>
+            <td style="background-color:{%for item in stat_array%}{% if item['id']==survey.id %}{{item['color']}}{%endif%}{%endfor%};color:white;text-align:center">
+            {% for item in stat_array %}
+                {% if item['id'] == survey.id %}
+                    {{ item['status'] }}
+                {% endif %}
+            {% endfor %}
+            </td>
+            <td style='background-color:white;color:black;text-align:center'>
                 <form>
                     <a href="{{ url_for('download_zip', survey_id=survey.id) }}">
                         <button type="button" class="btn btn-default">
@@ -131,7 +164,7 @@ function sortTable(n,table_id) {
                     </a>
                </form>
             </td>
-            <td>
+            <td style='background-color:white;color:black;text-align:center'>
                 <form>
                     <a href="{{ url_for('edit', survey_id=survey.id) }}">
                         <button type="button" class="btn btn-primary">
