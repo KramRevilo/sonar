@@ -158,19 +158,20 @@ def download_zip(survey_id):
   survey_doc = survey_service.get_doc_by_id(survey_id)
 
   # check the survey to see if it's of the type that needs an alternate creative
+  # print(f'in ZIP handler - survey_doc: {survey_doc.to_dict()}')
 
   # this is the standard survey
   filename, data = survey_service.zip_file(survey_id, survey_doc.to_dict())
 
-
   return send_file(
       data,
       mimetype='application/zip',
-      add_etags=False,
-      cache_timeout=0,
+    #   add_etags=False,
+    #   cache_timeout=0,
       last_modified=datetime.datetime.now(),
       as_attachment=True,
-      attachment_filename=filename)
+    #   attachment_filename=filename
+      download_name=filename)
 
 
 @app.route('/survey/download_responses/<string:survey_id>', methods=['GET'])

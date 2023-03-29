@@ -6,6 +6,10 @@
     <meta charset="UTF-8">
     <script>
         var clickTag = "http://www.google.com";
+
+        // define a 'global' for the cookie - we'll possibly need to reuse it
+        // if we're making multiple responses
+        var window.cookie = "";
     </script>
     <script>
         var fullConfiguration = {
@@ -18,6 +22,8 @@
                 "questions": {{all_question_json|tojson}},
                 // TODO: capture an exit url
                 "exit_url": "https://www.google.com",
+                // Adding response_type
+                "response_type": "{{response_type}}",
                 "carousel_images": [],
                 "trackers": [
                     ""
@@ -113,9 +119,22 @@
 
                 // Check cookie to get User ID or Drop a new one
                 getOrGenerateCookieId: function() {
+                    // var cookieIdRegexMatch = /bomu=([^;]+)/.exec(document.cookie);
+                    // return (cookieIdRegexMatch == null) ? this.setCookieId() :
+                    //     cookieIdRegexMatch[1];
+
+                    // look for matching cookie
                     var cookieIdRegexMatch = /bomu=([^;]+)/.exec(document.cookie);
-                    return (cookieIdRegexMatch == null) ? this.setCookieId() :
-                        cookieIdRegexMatch[1];
+
+                    // if no cookie found then create one and store in window.cookie
+                    if (cookieIdRegexMatch == null)
+                        window.cookie = this.setCookieId();
+                    // if cookie found use first returned item and store in
+                    // window.cookie
+                    else
+                        window.cookie = cookieIdRegexMatch[1]
+
+                    return window.cookie;
                 },
 
                 setCookieId: function() {
@@ -262,6 +281,13 @@
                         // Record time of last response
                         this.time_measurement.question_end_time = new Date();
                         return false;
+                    }
+                    else
+                    {
+                        if (this.surveyConfig.response_type == 'Submit Responses after each Question') {
+                            // find a better method here that doesn't rewrite the bomid
+                            this.sendCollectedResponseToServer();
+                        }
                     }
 
                     var question = this.questionMap[this.renderedQuestionId];

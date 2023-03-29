@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import survey_collection
 from forms import BRAND_TRACK
-
+from forms import RESPONSES_AT_END
 
 def get_all():
   return survey_collection.get_all()
@@ -74,6 +74,13 @@ def zip_file(survey_id, survey_dict):
       'default_control', 'default_expose'
   ]
 
+  # In order to make the responsetype backward compatible we need to support
+  # surveys defined WITHOUT a responsetype and default them to RESPONSES_AT_END.
+  # Check to see if there's a key for answer type 'responsetype' and, if not,
+  # then this is an old survey. Insert a key:value pair for RESPONSES_AT_END.
+  if 'responsetype' not in survey_dict:
+    survey_dict['responsetype'] = RESPONSES_AT_END
+
   # create zip
   template_zips = write_html_template(survey_id, survey_dict, prefix_filename,
                                       seg_types)
@@ -118,6 +125,7 @@ def get_html_template(survey_id, survey_dict, seg_type):
       survey=survey_dict,
       survey_id=survey_id,
       show_back_button=False,
+      response_type=survey_dict['responsetype'],
       all_question_json=get_question_json(survey_dict),
       seg=seg_type,
       thankyou_text=get_thank_you_text(survey_dict),
