@@ -257,12 +257,22 @@
 
 
                     // Return if all questions rendered OR decision tree based end
+                    // if (this.renderedQuestionId > this.surveyConfig.questions.length ||
+                    //     this.renderedQuestionId == 'end')
+
+                    var questionIdAsString = '';
+                    questionIdAsString = String(this.renderedQuestionId).toLowerCase()
+
                     if (this.renderedQuestionId > this.surveyConfig.questions.length ||
-                        this.renderedQuestionId == 'end') {
+                        questionIdAsString == 'end') {
                         // Record time of last response
                         this.time_measurement.question_end_time = new Date();
                         return false;
                     }
+                    // else
+                    // {
+                    //     this.sendCollectedResponseToServer();
+                    // }
 
                     var question = this.questionMap[this.renderedQuestionId];
 
