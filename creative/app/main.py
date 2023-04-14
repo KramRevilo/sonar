@@ -157,14 +157,7 @@ def reporting(survey_id):
 @app.context_processor
 def inject_receiver_params():
   return {
-      'receiver_url':
-          os.environ.get(
-              'RECEIVER_URL',
-              #'https://us-central1-jerraldwee-testing.cloudfunctions.net/receiver'
-            #   'https://us-central1-brandometer-devel-testing.cloudfunctions.net/receiver'
-              # 'https://us-central1-sonar-testing-379823.cloudfunctions.net/receiver'
-                'https://us-central1-omg-na-prd-sonar-gcp-ca.cloudfunctions.net/receiver'
-          )
+      'receiver_url': os.environ.get('RECEIVER_URL')
   }
 
 
