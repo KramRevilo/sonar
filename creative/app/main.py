@@ -118,11 +118,11 @@ def download_zip(survey_id):
   return send_file(
       data,
       mimetype='application/zip',
-      add_etags=False,
-      cache_timeout=0,
+      etag=False,
+      max_age=0,
       last_modified=datetime.datetime.now(),
       as_attachment=True,
-      attachment_filename=filename)
+      download_name=filename)
 
 
 @app.route('/survey/download_responses/<string:survey_id>', methods=['GET'])
