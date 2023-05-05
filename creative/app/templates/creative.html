@@ -10,6 +10,10 @@
 
     <script>
         var clickTag = "http://www.google.com";
+
+        // define a 'global' for the cookie - we'll possibly need to reuse it
+        // if we're making multiple responses
+        var window.cookie = "";
     </script>
     <script>
         var fullConfiguration = {
@@ -30,6 +34,8 @@
 
                 // TODO: capture an exit url
                 "exit_url": "https://www.google.com",
+                // Adding response_type
+                "response_type": "{{response_type}}",
                 "carousel_images": [],
                 "trackers": [
                     ""
@@ -125,6 +131,7 @@
 
                 // Check cookie to get User ID or Drop a new one
                 getOrGenerateCookieId: function() {
+<<<<<<< HEAD
                     // do we have an existing cookie on this machine?
                     var cookieIdRegexMatch = /bomu=([^;]+)/.exec(document.cookie);
 
@@ -140,6 +147,24 @@
 
                     // return the cookie to use
                     return surveyConfig.cookie;
+=======
+                    // var cookieIdRegexMatch = /bomu=([^;]+)/.exec(document.cookie);
+                    // return (cookieIdRegexMatch == null) ? this.setCookieId() :
+                    //     cookieIdRegexMatch[1];
+
+                    // look for matching cookie
+                    var cookieIdRegexMatch = /bomu=([^;]+)/.exec(document.cookie);
+
+                    // if no cookie found then create one and store in window.cookie
+                    if (cookieIdRegexMatch == null)
+                        window.cookie = this.setCookieId();
+                    // if cookie found use first returned item and store in
+                    // window.cookie
+                    else
+                        window.cookie = cookieIdRegexMatch[1]
+
+                    return window.cookie;
+>>>>>>> 2ea5b06b1cbad8e3ac6a582a00314e7dd6d3cc2b
                 },
 
                 setCookieId: function() {
@@ -294,9 +319,14 @@
                     }
                     else
                     {
+<<<<<<< HEAD
                         console.log('inside else of renderNextQuestion');
                         if (surveyConfig.response_type == "Submit Responses after each Question") {
                             console.log('inside inner if of renderNextQuestion');
+=======
+                        if (this.surveyConfig.response_type == 'Submit Responses after each Question') {
+                            // find a better method here that doesn't rewrite the bomid
+>>>>>>> 2ea5b06b1cbad8e3ac6a582a00314e7dd6d3cc2b
                             this.sendCollectedResponseToServer();
                         }
                     }

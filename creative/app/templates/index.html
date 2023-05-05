@@ -12,6 +12,9 @@ function sortTable(n,table_id) {
     switching = true;
     // Set the sorting direction to ascending:
     dir = "asc";
+
+    console.log("start SortTable");
+    
     /* Make a loop that will continue until
     no switching has been done: */
     while (switching) {
@@ -27,6 +30,9 @@ function sortTable(n,table_id) {
             one from current row and one from the next: */
             x = rows[i].getElementsByTagName("TD")[n];
             y = rows[i + 1].getElementsByTagName("TD")[n];
+
+            console.log("rows["+String(i)+"] x=" +x.innerHTML.toLowerCase().trim()+" rows["+String(i+1)+"] y="+y.innerHTML.toLowerCase().trim());
+
             /* Check if the two rows should switch place,
             based on the direction, asc or desc: */
 
@@ -62,36 +68,70 @@ function sortTable(n,table_id) {
     }
 }
 </script>
+<style>
+    .table_header {
+        text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+        background-color:#337ab7;        
+        vertical-align: middle;
+        font-size: 10pt;
+        cursor: pointer;
+        text-align :center;
+        color :white; 
+    }
+
+    .Qbox {
+            padding: 2px 5px;
+            height: 45px;
+            width: 274px;
+            border: 1px solid rgba(255, 255, 255, 0.290196);
+            border-radius: 5px;
+            color: white;
+            text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+            background-color: rgba(255, 255, 255, 0.14902);
+            box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 3px 0px;
+            display: table;
+        }
+
+</style>
 {% endblock scripts %}
 
 {% block content %}
 <div class="container">
     <table id="mainTable" class="table table-bordered table-striped">
         <thead class="thead-light">
-            <tr style='text-align:center;background-color:#337ab7;color:white'>
+            <tr style='text-align:center;background-color:#337ab7;color:white;vertical-align: middle;'>
                 <div style="cursor:pointer">
-                    <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(0,'mainTable')">Survey Name</th>
-                    <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(1,'mainTable')">Survey ID</th>
-                    <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(2,'mainTable')">Survey Questions</th>
-                    <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(3,'mainTable')">View</th>
-		            <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(4,'mainTable')">Response Count</th>
-		            <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(5,'mainTable')">Last Response (days)</th>
-		            <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(6,'mainTable')">Status</th>
-                    <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(7,'mainTable')">Download</th>
-                    <th scope="col" style="cursor:pointer;text-align:center;color:white" onclick="sortTable(8,'mainTable')">Actions</th>
+                    <th scope="col" class="table_header" style="width:250px;"
+                        onclick="sortTable(0,'mainTable')">Survey Name</th>
+                    <th scope="col" class="table_header"
+                        onclick="sortTable(1,'mainTable')">Survey ID</th>
+                    <th scope="col" class="table_header" style="width:200px;"
+                        onclick="sortTable(2,'mainTable')">Survey Questions</th>
+                    <th scope="col" class="table_header" style="width:50px;"
+                        onclick="sortTable(3,'mainTable')">View</th>
+		            <th scope="col" class="table_header" style="width:200px;"
+                        onclick="sortTable(4,'mainTable')">Response Count (segment:count)</th>
+		            <th scope="col" class="table_header" style="width:75px;"
+                        onclick="sortTable(5,'mainTable')">Last Response (days)</th>
+		            <th scope="col" class="table_header"
+                        onclick="sortTable(6,'mainTable')">Status</th>
+                    <th scope="col" class="table_header"
+                        onclick="sortTable(7,'mainTable')">Download</th>
+                    <th scope="col" class="table_header" style="width:50px;"
+                        onclick="sortTable(8,'mainTable')">Actions</th>
                 </div>                
             </tr>
         </thead>
         <tbody>
         {% for survey in all_surveys %}
         <tr>
-            <td style='background-color:white;color:black;text-align:center'>
+            <td style='font-size:10pt;background-color:white;color:black;text-align:center'>
                 {{ (survey.to_dict())['surveyname'] }}
             </td>
-            <td style='background-color:white;color:black;text-align:center'>
+            <td style='font-size:10pt;background-color:white;color:black;text-align:center'>
                 {{ survey.id }}
             </td>
-            <td style='background-color:white;color:black;text-align:center'>
+            <td style='font-size:10pt;background-color:white;color:black;text-align:center'>
                 <table class="table">
                     <ol>
                         {% for question_text in survey | get_all_question_text %}
@@ -100,7 +140,7 @@ function sortTable(n,table_id) {
                     </ol>
                 </table>
             </td>
-            <td style='background-color:white;color:black;text-align:center'>
+            <td style='font-size:10pt;background-color:white;color:black;text-align:center'>
                 <form>
                     <a href="{{ url_for('preview', survey_id=survey.id) }}">
                         <button type="button" class="btn btn-link">
@@ -116,7 +156,7 @@ function sortTable(n,table_id) {
                     {% endif %}
                </form>
             </td>
-            <td style="background-color:{%for item in stat_array%}{% if item['id']==survey.id %}{{item['color']}}{%endif%}{%endfor%};color:white;text-align:center">
+            <td style="font-size:10pt;background-color:{%for item in stat_array%}{% if item['id']==survey.id %}{{item['color']}}{%endif%}{%endfor%};color:white;text-align:center">
             {% for item in stat_array %}
                 {# is the current stat_array item id equal to the survey id? #}
                 {% if item['id'] == survey.id %}
@@ -136,35 +176,43 @@ function sortTable(n,table_id) {
                 {% endif %}
             {% endfor %}
             </td>
-            <td style="background-color:{%for item in stat_array%}{% if item['id']==survey.id %}{{item['color']}}{%endif%}{%endfor%};color:white;text-align:center">
+            <td style="font-size:10pt;background-color:{%for item in stat_array%}{% if item['id']==survey.id %}{{item['color']}}{%endif%}{%endfor%};color:white;text-align:center">
             {% for item in stat_array %}
                 {% if item['id'] == survey.id %}
                     {{ item['last_change'] }}
                 {% endif %}
             {% endfor %}
             </td>
-            <td style="background-color:{%for item in stat_array%}{% if item['id']==survey.id %}{{item['color']}}{%endif%}{%endfor%};color:white;text-align:center">
+            <td style="font-size:10pt;background-color:{%for item in stat_array%}{% if item['id']==survey.id %}{{item['color']}}{%endif%}{%endfor%};color:white;text-align:center">
             {% for item in stat_array %}
                 {% if item['id'] == survey.id %}
                     {{ item['status'] }}
                 {% endif %}
             {% endfor %}
             </td>
-            <td style='background-color:white;color:black;text-align:center'>
+            <td style='font-size:10pt;background-color:white;color:black;text-align:center'>
                 <form>
                     <a href="{{ url_for('download_zip', survey_id=survey.id) }}">
                         <button type="button" class="btn btn-default">
-                            <span class="glyphicon glyphicon-download" aria-hidden="true"></span> Zip
+                            <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+                            &nbsp;&nbsp;Creative Zip&nbsp;&nbsp;
                         </button>
                     </a>
                     <a href="{{ url_for('download_responses', survey_id=survey.id) }}">
                         <button type="button" class="btn btn-default">
-                            <span class="glyphicon glyphicon-download" aria-hidden="true"></span> Responses
+                            <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+                            &nbsp;Raw Responses&nbsp;&nbsp;
                         </button>
                     </a>
+                    <a href="{{ url_for('download_responses_context', survey_id=survey.id) }}">
+                        <button type="button" class="btn btn-default">
+                            <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+                            &nbsp;Responses with Context
+                        </button>
+                    </a> 
                </form>
             </td>
-            <td style='background-color:white;color:black;text-align:center'>
+            <td style='font-size:10pt;background-color:white;color:black;text-align:center'>
                 <form>
                     <a href="{{ url_for('edit', survey_id=survey.id) }}">
                         <button type="button" class="btn btn-primary">

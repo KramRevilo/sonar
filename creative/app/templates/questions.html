@@ -5,7 +5,223 @@
     padding-top: 15px;
   }
 </style>
+<style>
+/* The .invisible class is used for hiding the 'Thank You' message that
+   is not shown until the end of the survey questions.
+   It is probably best not to change this class.
+*/
+.invisible {
+    display: none;
+}
 
+.master_container {
+    border: 1px solid red;
+}
+
+/* The #master_container is the box containing all survey elements as a DIV.  
+   It contains the survey_container, the thankyou_container, and the bottom
+   container - all divs.
+*/
+#master_container {
+    background-color:#008000;
+    width: 300px;
+    height: 250px;
+    border: solid black 1px;
+}
+
+/* The #survey_container is the box (div) containing the question
+   container and all option_container_[0-4] divs.
+*/
+#survey_container {
+    padding: 7px;
+    padding-bottom: 3px;
+}
+
+/* .Qbox is the CSS class for controlling the look of the question
+   container, including the text of the question itself.
+*/
+.Qbox {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    padding: 2px 5px;
+    height: 45px;
+    width: 274px;
+    border: 1px solid rgba(255, 255, 255, 0.290196);
+    border-radius: 5px;
+    color: white;
+    text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+    background-color: rgba(255, 255, 255, 0.14902);
+    box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 3px 0px;
+    display: table;
+}
+
+.Qbox span {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+/* .Abox is the CSS class for controlling the look of the option
+   containers (the answers) but does NOT including the formatting
+   of the answer/option text: that is in .AText
+*/
+.Abox {
+    border: 1px solid rgba(255, 255, 255, 0.290196);
+    border-radius: 5px;
+    text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+    background-color: rgba(255, 255, 255, 0.14902);
+    box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 3px 0px;
+    position: relative;
+    margin: 4px 0;
+}
+
+/* The .Abox[selected="true"] class allows for the formmating of
+   the answer/option box if the user is using keyboard controls 
+   to manually select the answer.
+*/
+.Abox[selected="true"] {
+    background-color: rgba(255, 127, 0, 0.7);
+}
+
+/* The .Abox:hover class allows for the formmating of
+   the answer/option box when the user hovers their mouse over
+   it.
+*/
+.Abox:hover {
+    cursor: pointer;
+    background-color: rgba(255, 127, 0, 0.4);
+}
+
+/* .AText is used to select the formatting of the answer/option
+   text.
+*/
+.AText {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    color: white;
+    text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+    padding-left: 5px;
+    font-size: 12px;
+    height: 27px;
+    line-height: 27px;
+}
+
+/* The #bottom_container class is used to format the blank space
+   shown at the bottom of the survey creative.
+*/
+#bottom_container {
+    position: relative;
+}
+
+/* The #next_button class is used to format the button that is
+   shown at the bottom of a survey question page when that question
+   is multiple option as it allows the user to advancce to the next
+   question after all their selections are made.
+*/
+#next_button {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    position: absolute;
+    right: 8px;
+    top: -6px;
+    color: beige;
+    padding: 3px 15px;
+    text-shadow: rgba(0, 0, 0, 1) 1px 1px 1px;
+    background-color: rgba(255, 200, 0, 0.6);
+    cursor: pointer;
+}
+
+/* The #next_button:hover class is used to format the 'next' button
+   when the user hovers over it with their mouse.
+*/
+#next_button:hover {
+    background-color: rgba(255, 127, 80, 0.8);
+    color: white;
+}
+
+/* Unused */
+#question_comment {
+    color: #e8e7e7;
+    margin: 0 -2px 0 7px;
+    font-size: 13px;
+}
+
+/* The .thankyoucontainer class allows for formatting of the div
+   and its text that is shown at the end of the survey.
+*/
+.thankyoucontainer {
+    height: 100px;
+    width: 300px;
+    position: absolute;
+    top: 100px;
+    left: 0px;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 26px;
+    color: beige;
+    text-shadow: rgba(0, 0, 0, 0.8) 2px 2px 2px
+}
+</style>
+<script>
+    // Appends CSS content to the head of the site
+    function appendStyleSheet(id, content) {
+
+        if (!document.querySelector("#" + id)) {
+            var head = document.head || document.getElementsByTagName("head")[0];
+            head.appendChild(createStyleElement(id, content));
+            console.log(head);
+        }
+    }
+
+    // Creates the style element
+    function createStyleElement(id, content) {
+        var style = document.createElement("style");
+        style.type = "text/css";
+        style.id = id;
+        
+        if (style.styleSheet) {
+            style.styleSheet.cssText = content;
+        } else {
+            style.appendChild(document.createTextNode(content));
+        }
+        return style;
+    }
+
+    function removeStyles(el) {
+        el.removeAttribute('style');
+
+        if(el.childNodes.length > 0) {
+            for(let child in el.childNodes) {
+                /* filter element nodes only */
+                if(el.childNodes[child].nodeType == 1)
+                    removeStyles(el.childNodes[child]);
+            }
+        }
+    }
+    
+    function refreshFromCssSample() {
+        // remove all built-in styles
+        document.querySelectorAll('style')
+            .forEach(el => el.parentNode.removeChild(el));
+
+        // put back 'body style' (not shown in text box)
+        restore_body = 'body { \n' +
+                        'font-family: "Open Sans", sans-serif; \n' +
+                        'font-size: 13px;\n' +
+                        'margin: 0;\n' +
+                        '}\n\n';
+        appendStyleSheet('document.body', restore_body);
+
+        //append what's in the textarea form element
+        appendStyleSheet('document.body', custom_css.value);
+    }
+    
+    window.addEventListener("load", (event) => {
+        refreshFromCssSample();
+    });
+
+
+    
+</script>
 <div class="container">
   <form action="" method="post">
     {{ form.hidden_tag() }}
@@ -25,8 +241,66 @@
     <label for="responsetype">Response Type</label>
         {{ form.responsetype(class="form-control") }}
     </p>
-    
-    {% for n in range(1, 6) %}
+    <hr />
+
+    <table border='1' style='width:100%'>
+        <tr>
+            <td style='text-align:center;font-weight:bold'>
+               Survey Creative CSS
+            </td>
+            <td style='text-align:center;font-weight:bold'>
+               Example Survey
+            </td>
+        </tr>
+        <tr style='vertical-align:top;'>
+            <td style=''>
+                    {{ form.custom_css(class="form-control", rows="34", style="width:100%;height:100%;") }}
+            </td>
+            <td style='width:50%;' align="center">
+                &nbsp;
+                <div id="master_container" style="margin:auto">
+                    <div id="survey_container">
+                        <div id="question_container" class="Qbox">
+                            <span id="question_text">
+                                Sample Question
+                            </span>
+                        </div>
+                        <div id="option_container_0" class="Abox">
+                            <div id="option_text_0" class="AText">opt1</div>
+                        </div>
+                        <div id="option_container_1" class="Abox">
+                            <div id="option_text_1" class="AText">opt2</div>
+                        </div>
+                        <div id="option_container_2" class="Abox">
+                            <div id="option_text_2" class="AText">opt3</div>
+                        </div>
+                        <div id="option_container_3" class="Abox">
+                            <div id="option_text_3" class="AText">opt4</div>
+                        </div>
+                        <!-- <div id="option_container_4" class="Abox">
+                            <div id="option_text_4" class="AText">opt5</div>
+                        </div> -->
+                    </div>
+                    <div id="thankyou_container" class="invisible">
+                        <div id="thankyou_text"></div>
+                    </div>
+                    <div id="bottom_container">
+                        <span id="question_comment"></span><span id="next_button">Next</span>
+                    </div>
+                </div>
+
+                <br><hr/>
+                <button style='font-size:14pt' type="button"
+                    onclick='refreshFromCssSample();'>Update Sample Based on CSS</button>
+                <hr/><br>
+
+                <img src='https://storage.cloud.google.com/admin-ui-images/survey_css_guide.png'
+                    alt='CSS guide' width='653' height='289'>
+            </td>
+        </tr>
+    </table>
+
+    {% for n in range(1, 5) %}
     <hr />
     <div>
       {% set question = 'question' + n|string %}
@@ -63,13 +337,16 @@
       {% endfor %}
     </div>
     {% endfor %}
-
     <hr />
     <p>
       {{ form.submit(class="btn btn-primary") }}
       <a href="{{ url_for('index') }}" class="btn btn-default">Cancel</a>
     </p>
   </form>
-
+  
   {% endblock %}
 </div>
+
+
+
+
