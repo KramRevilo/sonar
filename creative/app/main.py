@@ -27,8 +27,12 @@ from flask_basicauth import BasicAuth
 from flask_bootstrap import Bootstrap
 import forms
 from forms import BRAND_TRACK
+from forms import DEFAULT_CSS
 import survey_service
 import datetime
+from forms import RESPONSES_AT_END
+from forms import RESPONSES_IMMEDIATELY
+
 
 title = 'Sonar'
 app = Flask(__name__)
@@ -41,13 +45,13 @@ app.config['BASIC_AUTH_FORCE'] = True
 
 ACTIVE_DAYS = 3
 ACTIVE_COLOR = 'MediumSeaGreen'
-ACTIVE_TEXT = 'Responses within last 3 days'
+ACTIVE_TEXT = 'Active'
 WARNING_DAYS = 14
 WARNING_COLOR = 'Orange'
-WARNING_TEXT = 'Responses within past 2 weeks'
+WARNING_TEXT = 'Stale'
 OLD_DAYS = 14
 OLD_COLOR = 'Tomato'
-OLD_TEXT = 'No response in 14 days'
+OLD_TEXT = 'Timed Out'
 
 MRC_INIT = 999999999
 
@@ -66,7 +70,7 @@ def index():
 
     # set high number for last update
     most_recent_change = MRC_INIT
-    # build an array with stats for each segmentation, support up to 6 segmentations
+    # build an array with stats for each segmentation, support up to 6 segments
     segs = []
     for x in range(0,6):
         if x in segmentation_rows:
@@ -90,10 +94,8 @@ def index():
 
     stat_array.append({'id':survey.id,'stats':segs,'color':color,'last_change':most_recent_change,'status':status_text})
 
-  # print out list of all surveys, with stats for each segment
-  # print(f'finalized stat array: {stat_array}')
   all_surveys = survey_service.get_all()
-  return render_template('index.html', all_surveys=all_surveys, stat_array=stat_array)
+  return render_template('index.html', all_surveys=all_surveys, stat_array=stat_array, title=title)
 
 
 @app.route('/survey/create', methods=['GET', 'POST'])
@@ -112,6 +114,17 @@ def preview(survey_id):
   survey_doc = survey_service.get_doc_by_id(survey_id)
   if survey_doc.exists:
     survey_info = survey_doc.to_dict()
+
+    if 'custom_css' in survey_info:
+        custom_css = survey_info['custom_css']
+    else:
+        custom_css = DEFAULT_CSS
+
+    if 'responseType' in survey_info:
+        response_type = survey_info['surveytype']
+    else:
+        response_type = RESPONSES_AT_END
+
     return render_template(
         'creative.html',
         survey=survey_info,
@@ -120,6 +133,8 @@ def preview(survey_id):
         show_back_button=True,
         all_question_json=survey_service.get_question_json(survey_info),
         seg='preview',
+        custom_css=custom_css,
+        response_type = response_type,
         thankyou_text=survey_service.get_thank_you_text(survey_info),
         next_text=survey_service.get_next_text(survey_info),
         comment_text=survey_service.get_comment_text(survey_info))
@@ -141,11 +156,18 @@ def delete():
 @app.route('/survey/edit', methods=['POST', 'PUT', 'GET'])
 def edit():
   """Edit Survey."""
+  # Create form object
   form = forms.QuestionForm()
+
+  # Get info about survey from Firebase
   docref_id = request.args.get('survey_id')
   edit_doc = survey_service.get_doc_by_id(docref_id)
+
+  # Set the form data according to what was loaded from Firebase
   if request.method == 'GET':
     survey_service.set_form_data(form, edit_doc)
+
+  # present page, gather entries upon submission
   if form.validate_on_submit():
     survey_service.update_by_id(docref_id, form)
     return redirect(url_for('index'))
@@ -157,20 +179,15 @@ def download_zip(survey_id):
   """Download zip of survey creative(s)."""
   survey_doc = survey_service.get_doc_by_id(survey_id)
 
-  # check the survey to see if it's of the type that needs an alternate creative
-
   # this is the standard survey
   filename, data = survey_service.zip_file(survey_id, survey_doc.to_dict())
-
 
   return send_file(
       data,
       mimetype='application/zip',
-      add_etags=False,
-      cache_timeout=0,
       last_modified=datetime.datetime.now(),
       as_attachment=True,
-      attachment_filename=filename)
+      download_name=filename)
 
 
 @app.route('/survey/download_responses/<string:survey_id>', methods=['GET'])
@@ -182,6 +199,16 @@ def download_responses(survey_id):
         csv,
         mimetype='text/csv',
         headers={'Content-disposition': 'attachment; filename=surveydata.csv'})
+
+@app.route('/survey/download_responses_context/<string:survey_id>', methods=['GET'])
+def download_responses_context(survey_id):
+  """Download survey responses with context"""
+  if request.method == 'GET':
+    csv = survey_service.download_responses_with_context(survey_id)
+    return Response(
+        csv,
+        mimetype='text/csv',
+        headers={'Content-disposition': 'attachment; filename=surveydata_context.csv'})
 
 
 @app.route('/survey/reporting/<string:survey_id>', methods=['GET'])
@@ -208,7 +235,6 @@ def inject_receiver_params():
       'receiver_url':
           os.environ.get(
               'RECEIVER_URL',
-              #'https://us-central1-jerraldwee-testing.cloudfunctions.net/receiver'
             #   'https://us-central1-brandometer-devel-testing.cloudfunctions.net/receiver'
               'https://us-central1-sonar-testing-379823.cloudfunctions.net/receiver'
           )

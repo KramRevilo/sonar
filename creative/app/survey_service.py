@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import survey_collection
 from forms import BRAND_TRACK
-
+from forms import DEFAULT_CSS
 
 def get_all():
   return survey_collection.get_all()
@@ -113,6 +113,11 @@ def write_html_template(survey_id, survey_dict, prefix_filename, seg_types):
 
 
 def get_html_template(survey_id, survey_dict, seg_type):
+  if 'custom_css' in survey_dict:
+    custom_css = survey_dict['custom_css']
+  else:
+    custom_css = DEFAULT_CSS
+
   return render_template(
       'creative.html',
       survey=survey_dict,
@@ -120,6 +125,7 @@ def get_html_template(survey_id, survey_dict, seg_type):
       show_back_button=False,
       all_question_json=get_question_json(survey_dict),
       seg=seg_type,
+      custom_css=custom_css,
       thankyou_text=get_thank_you_text(survey_dict),
       next_text=get_next_text(survey_dict),
       comment_text=get_comment_text(survey_dict))
@@ -225,6 +231,32 @@ def get_survey_responses(surveyid, client=None):
   return df
 
 
+def get_survey_responses_context(surveyid, client=None):
+
+  # include questions (look up in survey here and join in?) 
+  #
+  
+  """Get data from survey"""
+  google.cloud.bigquery.magics.context.use_bqstorage_api = True
+  project_id = os.environ.get('PROJECT_ID')
+  table_id = os.environ.get('TABLE_ID')
+
+  if client is None:
+    client = bigquery.Client(project=project_id)
+  bqstorageclient = bigquery_storage.BigQueryReadClient()
+  query = f"""
+        SELECT CreatedAt, Segmentation, Response
+        FROM `{table_id}`
+        WHERE ID = @survey_id
+    """
+  job_config = bigquery.QueryJobConfig(query_parameters=[
+      bigquery.ScalarQueryParameter('survey_id', 'STRING', surveyid),
+  ])
+  query_job = client.query(query, job_config=job_config)
+  df = query_job.result().to_dataframe(bqstorage_client=bqstorageclient)
+  return df
+
+
 def get_response_count_from_survey(survey):
   """Get response count from survey"""
   google.cloud.bigquery.magics.context.use_bqstorage_api = True
@@ -255,6 +287,33 @@ def get_response_count_from_survey(survey):
   return converted_dict
 
 def download_responses(surveyid):
+  """Download survey responses in a CSV format file."""
+  df = get_survey_responses(surveyid)
+  output = {'Date': [], 'Control/Expose': [], 'Dimension 2': []}
+  outputdf = pd.DataFrame(data=output)
+  outputdf['Date'] = df['CreatedAt'].values
+  outputdf['Control/Expose'] = df['Segmentation'].values
+  if df['Response'].any():
+    responselist = df['Response'].str.split(pat=('|'), expand=True)
+  else:
+    responselist = pd.DataFrame()
+  columns = list(responselist)
+  for i in columns:
+    responselist[i] = responselist[i].str.slice(start=2)
+  responselist = responselist.rename(
+      columns={
+          0: 'Response 1',
+          1: 'Response 2',
+          2: 'Response 3',
+          3: 'Response 4',
+          4: 'Response 5'
+      })
+  responselist = responselist.reset_index(drop=True)
+  outputdf = pd.concat([outputdf, responselist], axis=1)
+  csv = outputdf.to_csv(index=False)
+  return csv
+
+def download_responses_with_context(surveyid):
   """Download survey responses in a CSV format file."""
   df = get_survey_responses(surveyid)
   output = {'Date': [], 'Control/Expose': [], 'Dimension 2': []}

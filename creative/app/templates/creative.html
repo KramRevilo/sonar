@@ -4,6 +4,10 @@
 <head>
     <meta name="ad.size" content="width=300,height=250">
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
     <script>
         var clickTag = "http://www.google.com";
     </script>
@@ -11,11 +15,19 @@
         var fullConfiguration = {
             "survey_config": {
                 "response_server": "{{receiver_url}}?type=survey&id={survey_id}&seg={seg}&response={responses}&visual={visual_responses}&creative_size={size}&randomtimestamp={random_timestamp}&bomid={bomid}&times={time_measurement}",
+                
                 "id": "{{survey_id}}",
+                
                 // TODO: Create new creatives for each segment (e.g. demographics) of interest
                 "seg": "{{seg}}",
+                
+                "response_type": "{{response_type}}",
+                
+                "cookie": "",
+
                 // TODO: Update questions and options for each survey
                 "questions": {{all_question_json|tojson}},
+
                 // TODO: capture an exit url
                 "exit_url": "https://www.google.com",
                 "carousel_images": [],
@@ -46,7 +58,7 @@
                             "container": "question_container"
                         },
                         "options": {
-                            "max_options": 5,
+                            "max_options": 4,
                             "option_prefix": {
                                 "text": "option_text_",
                                 "container": "option_container_",
@@ -113,9 +125,21 @@
 
                 // Check cookie to get User ID or Drop a new one
                 getOrGenerateCookieId: function() {
+                    // do we have an existing cookie on this machine?
                     var cookieIdRegexMatch = /bomu=([^;]+)/.exec(document.cookie);
-                    return (cookieIdRegexMatch == null) ? this.setCookieId() :
-                        cookieIdRegexMatch[1];
+
+                    // no cookie?  Create one and store in surveyConfig object.
+                    if (cookieIdRegexMatch == null)
+                        surveyConfig.cookie = this.setCookieId();
+                    // found a cookie? Use it and store in surveyConfig object.
+                    else
+                        surveyConfig.cookie = cookieIdRegexMatch[1];
+
+                    // return (cookieIdRegexMatch == null) ? this.setCookieId() :
+                    //     cookieIdRegexMatch[1];
+
+                    // return the cookie to use
+                    return surveyConfig.cookie;
                 },
 
                 setCookieId: function() {
@@ -255,7 +279,6 @@
                                 [0]];
                     }
 
-
                     // Return if all questions rendered OR decision tree based end
                     // if (this.renderedQuestionId > this.surveyConfig.questions.length ||
                     //     this.renderedQuestionId == 'end')
@@ -269,10 +292,14 @@
                         this.time_measurement.question_end_time = new Date();
                         return false;
                     }
-                    // else
-                    // {
-                    //     this.sendCollectedResponseToServer();
-                    // }
+                    else
+                    {
+                        console.log('inside else of renderNextQuestion');
+                        if (surveyConfig.response_type == "Submit Responses after each Question") {
+                            console.log('inside inner if of renderNextQuestion');
+                            this.sendCollectedResponseToServer();
+                        }
+                    }
 
                     var question = this.questionMap[this.renderedQuestionId];
 
@@ -284,7 +311,6 @@
                     }
 
                     this.renderOptions(question.options);
-
 
                     // hide Next Button
                     document
@@ -405,8 +431,8 @@
                 renderHTML: function() {
                     this.setupEventHandlers();
                     // console.log(controller.uiConfig.background_color);
-                    document.getElementById('master_container').style['background-color'] =
-                        this.uiConfig.background_color;
+                    // document.getElementById('master_container').style['background-color'] =
+                    //     this.uiConfig.background_color;
                 },
 
                 renderThankyou: function() {
@@ -471,7 +497,6 @@
 
                     this.fireGlobalTagsEvents();
                 },
-
 
                 setupGlobalTags: function() {
                     if (this.surveyConfig.global_tags != null &&
@@ -547,7 +572,6 @@
                     }
                 },
 
-
                 getEncodedResponseString: function(responses) {
                     return encodeURIComponent(Object.keys(responses)
                         .map(function(x) {
@@ -596,7 +620,7 @@
 
             };
         }
-
+        
         var controller = new Controller(fullConfiguration.ui_config, fullConfiguration.survey_config);
 
         function runFSM() {
@@ -627,117 +651,51 @@
                     break;
             }
         }
+/*
+        // Appends CSS content to the head of the site
+        function appendStyleSheet(id, content) {
+            if (!document.querySelector("#" + id)) {
+                var head = document.head || document.getElementsByTagName("head")[0];
+                head.appendChild(createStyleElement(id, content));
+                console.log(head);
+                }
+        }
+
+        function refreshFromCssSample() {
+
+            // get original stylesheet as coded into in doc via template
+            // full_stylesheet = $('#creative_stylesheet').valueOf();  //this doesn't work
+            var sts = document.getElementsByTagName('style');
+            var str = '';
+            for(i = 0; i < sts.length; i++){
+                str = str + sts[i].innerHTML;
+            }
+            full_stylesheet = str;
+
+            // remove all built-in styles
+            document.querySelectorAll('style')
+                .forEach(el => el.parentNode.removeChild(el));
+
+            // put in 'body style'
+            restore_body = '.body { \n' +
+                'font-family: "Open Sans", sans-serif; \n' +
+                'font-size: 13px;\n' +
+                'margin: 0;\n' +
+                '}\n\n';
+            appendStyleSheet('document.body', restore_body);
+
+            // add back ALL styles again
+            appendStyleSheet('document.body', full_stylesheet);
+    }
+    
+    window.addEventListener("load", (event) => {
+        refreshFromCssSample();
+    });
+*/
+
     </script>
-    <style>
-        .invisible {
-            display: none;
-        }
-        
-        body {
-            font-family: 'Open Sans', sans-serif;
-            font-size: 13px;
-            margin: 0;
-        }
-        
-        .master_container {
-            border: 1px solid red;
-        }
-        
-        #master_container {
-            width: 300px;
-            height: 250px;
-            border: solid black 1px;
-        }
-        
-        #survey_container {
-            padding: 7px;
-            padding-bottom: 3px;
-        }
-        
-        .Qbox {
-            padding: 2px 5px;
-            height: 45px;
-            width: 274px;
-            border: 1px solid rgba(255, 255, 255, 0.290196);
-            border-radius: 5px;
-            color: white;
-            text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
-            background-color: rgba(255, 255, 255, 0.14902);
-            box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 3px 0px;
-            display: table;
-        }
-        
-        .Qbox span {
-            display: table-cell;
-            vertical-align: middle;
-        }
-        
-        .Abox {
-            border: 1px solid rgba(255, 255, 255, 0.290196);
-            border-radius: 5px;
-            text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
-            background-color: rgba(255, 255, 255, 0.14902);
-            box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 3px 0px;
-            position: relative;
-            margin: 4px 0;
-        }
-        
-        .Abox[selected="true"] {
-            background-color: rgba(255, 127, 0, 0.7);
-        }
-        
-        .Abox:hover {
-            cursor: pointer;
-            background-color: rgba(255, 127, 0, 0.4);
-        }
-        
-        .AText {
-            color: white;
-            text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
-            padding-left: 5px;
-            font-size: 12px;
-            height: 27px;
-            line-height: 27px;
-        }
-        
-        #bottom_container {
-            position: relative;
-        }
-        
-        #next_button {
-            position: absolute;
-            right: 8px;
-            top: -6px;
-            font-size: 13px;
-            color: beige;
-            padding: 3px 15px;
-            text-shadow: rgba(0, 0, 0, 1) 1px 1px 1px;
-            background-color: rgba(255, 200, 0, 0.6);
-            cursor: pointer;
-        }
-        
-        #next_button:hover {
-            background-color: rgba(255, 127, 80, 0.8);
-            color: white;
-        }
-        
-        #question_comment {
-            color: #e8e7e7;
-            margin: 0 -2px 0 7px;
-            font-size: 13px;
-        }
-        
-        .thankyoucontainer {
-            height: 100px;
-            width: 300px;
-            position: absolute;
-            top: 100px;
-            left: 0px;
-            text-align: center;
-            font-size: 26px;
-            color: beige;
-            text-shadow: rgba(0, 0, 0, 0.8) 2px 2px 2px
-        }
+    <style id='creative_stylesheet'>
+        {{ custom_css|safe }}
     </style>
 </head>
 
@@ -761,9 +719,9 @@
             <div id="option_container_3" class="Abox">
                 <div id="option_text_3" class="AText">opt4</div>
             </div>
-            <div id="option_container_4" class="Abox">
+            <!-- <div id="option_container_4" class="Abox">
                 <div id="option_text_4" class="AText">opt5</div>
-            </div>
+            </div> -->
 
         </div>
         <div id="thankyou_container" class="invisible">
