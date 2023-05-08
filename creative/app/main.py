@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,8 +27,14 @@ from flask_basicauth import BasicAuth
 from flask_bootstrap import Bootstrap
 import forms
 from forms import BRAND_TRACK
+from forms import DEFAULT_CSS
 import survey_service
+import datetime
+from forms import RESPONSES_AT_END
+from forms import RESPONSES_IMMEDIATELY
 
+
+title = 'Sonar'
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'supersecretkey'
 Bootstrap(app)
@@ -36,6 +42,18 @@ app.config['BASIC_AUTH_USERNAME'] = os.environ.get('AUTH_USERNAME')
 app.config['BASIC_AUTH_PASSWORD'] = os.environ.get('AUTH_PASSWORD')
 basic_auth = BasicAuth(app)
 app.config['BASIC_AUTH_FORCE'] = True
+
+ACTIVE_DAYS = 3
+ACTIVE_COLOR = 'MediumSeaGreen'
+ACTIVE_TEXT = 'Active'
+WARNING_DAYS = 14
+WARNING_COLOR = 'Orange'
+WARNING_TEXT = 'Stale'
+OLD_DAYS = 14
+OLD_COLOR = 'Tomato'
+OLD_TEXT = 'Timed Out'
+
+MRC_INIT = 999999999
 
 
 @app.route('/')
@@ -46,12 +64,38 @@ def root():
 @app.route('/index')
 def index():
   all_surveys = survey_service.get_all()
+  stat_array = []
+  for survey in all_surveys:
+    segmentation_rows = survey_service.get_response_count_from_survey(survey)
 
-  #size_array = []
-  #for survey in all_surveys:
-  #  size_array.append({survey.id,get_survey_responses(survey.id).shape})
+    # set high number for last update
+    most_recent_change = MRC_INIT
+    # build an array with stats for each segmentation, support up to 6 segments
+    segs = []
+    for x in range(0,6):
+        if x in segmentation_rows:
+            a = segmentation_rows[x]
+            if a['days_since_response'] < most_recent_change:
+                most_recent_change = a['days_since_response']
+            segs.append(a)
 
-  return render_template('index.html', all_surveys=all_surveys)
+    if most_recent_change <= ACTIVE_DAYS:
+        color = ACTIVE_COLOR
+        status_text = ACTIVE_TEXT
+    elif most_recent_change <= WARNING_DAYS:
+        color = WARNING_COLOR
+        status_text = WARNING_TEXT
+    else:
+        color = OLD_COLOR
+        status_text = OLD_TEXT
+
+    if most_recent_change == MRC_INIT:
+        most_recent_change = 'No responses'
+
+    stat_array.append({'id':survey.id,'stats':segs,'color':color,'last_change':most_recent_change,'status':status_text})
+
+  all_surveys = survey_service.get_all()
+  return render_template('index.html', all_surveys=all_surveys, stat_array=stat_array, title=title)
 
 
 @app.route('/survey/create', methods=['GET', 'POST'])
@@ -70,6 +114,17 @@ def preview(survey_id):
   survey_doc = survey_service.get_doc_by_id(survey_id)
   if survey_doc.exists:
     survey_info = survey_doc.to_dict()
+
+    if 'custom_css' in survey_info:
+        custom_css = survey_info['custom_css']
+    else:
+        custom_css = DEFAULT_CSS
+
+    if 'responseType' in survey_info:
+        response_type = survey_info['surveytype']
+    else:
+        response_type = RESPONSES_AT_END
+
     return render_template(
         'creative.html',
         survey=survey_info,
@@ -78,6 +133,8 @@ def preview(survey_id):
         show_back_button=True,
         all_question_json=survey_service.get_question_json(survey_info),
         seg='preview',
+        custom_css=custom_css,
+        response_type = response_type,
         thankyou_text=survey_service.get_thank_you_text(survey_info),
         next_text=survey_service.get_next_text(survey_info),
         comment_text=survey_service.get_comment_text(survey_info))
@@ -99,11 +156,18 @@ def delete():
 @app.route('/survey/edit', methods=['POST', 'PUT', 'GET'])
 def edit():
   """Edit Survey."""
+  # Create form object
   form = forms.QuestionForm()
+
+  # Get info about survey from Firebase
   docref_id = request.args.get('survey_id')
   edit_doc = survey_service.get_doc_by_id(docref_id)
+
+  # Set the form data according to what was loaded from Firebase
   if request.method == 'GET':
     survey_service.set_form_data(form, edit_doc)
+
+  # present page, gather entries upon submission
   if form.validate_on_submit():
     survey_service.update_by_id(docref_id, form)
     return redirect(url_for('index'))
@@ -114,7 +178,13 @@ def edit():
 def download_zip(survey_id):
   """Download zip of survey creative(s)."""
   survey_doc = survey_service.get_doc_by_id(survey_id)
+
+  # check the survey to see if it's of the type that needs an alternate creative
+  # print(f'in ZIP handler - survey_doc: {survey_doc.to_dict()}')
+
+  # this is the standard survey
   filename, data = survey_service.zip_file(survey_id, survey_doc.to_dict())
+
   return send_file(
       data,
       mimetype='application/zip',
@@ -134,6 +204,16 @@ def download_responses(survey_id):
         csv,
         mimetype='text/csv',
         headers={'Content-disposition': 'attachment; filename=surveydata.csv'})
+
+@app.route('/survey/download_responses_context/<string:survey_id>', methods=['GET'])
+def download_responses_context(survey_id):
+  """Download survey responses with context"""
+  if request.method == 'GET':
+    csv = survey_service.download_responses_with_context(survey_id)
+    return Response(
+        csv,
+        mimetype='text/csv',
+        headers={'Content-disposition': 'attachment; filename=surveydata_context.csv'})
 
 
 @app.route('/survey/reporting/<string:survey_id>', methods=['GET'])

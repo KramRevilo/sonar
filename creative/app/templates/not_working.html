@@ -1,0 +1,810 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>
+    
+        Survey Creation
+    
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/index">
+        
+            Survey Creation
+        
+      </a>
+    </div>
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="/index">Home</a></li>
+        <li><a href="/survey/create">Create Survey</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<style type="text/css">
+  form .row {
+    padding-top: 15px;
+  }
+</style>
+<style>
+/* The .invisible class is used for hiding the 'Thank You' message that
+   is not shown until the end of the survey questions.
+   It is probably best not to change this class.
+*/
+.invisible {
+    display: none;
+}
+
+.master_container {
+    border: 1px solid red;
+}
+
+/* The #master_container is the box containing all survey elements as a DIV.  
+   It contains the survey_container, the thankyou_container, and the bottom
+   container - all divs.
+*/
+#master_container {
+    background-color:#008000;
+    width: 300px;
+    height: 250px;
+    border: solid black 1px;
+}
+
+/* The #survey_container is the box (div) containing the question
+   container and all option_container_[0-4] divs.
+*/
+#survey_container {
+    padding: 7px;
+    padding-bottom: 3px;
+}
+
+/* .Qbox is the CSS class for controlling the look of the question
+   container, including the text of the question itself.
+*/
+.Qbox {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    padding: 2px 5px;
+    height: 45px;
+    width: 274px;
+    border: 1px solid rgba(255, 255, 255, 0.290196);
+    border-radius: 5px;
+    color: white;
+    text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+    background-color: rgba(255, 255, 255, 0.14902);
+    box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 3px 0px;
+    display: table;
+}
+
+.Qbox span {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+/* .Abox is the CSS class for controlling the look of the option
+   containers (the answers) but does NOT including the formatting
+   of the answer/option text: that is in .AText
+*/
+.Abox {
+    border: 1px solid rgba(255, 255, 255, 0.290196);
+    border-radius: 5px;
+    text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+    background-color: rgba(255, 255, 255, 0.14902);
+    box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 3px 0px;
+    position: relative;
+    margin: 4px 0;
+}
+
+/* The .Abox[selected="true"] class allows for the formmating of
+   the answer/option box if the user is using keyboard controls 
+   to manually select the answer.
+*/
+.Abox[selected="true"] {
+    background-color: rgba(255, 127, 0, 0.7);
+}
+
+/* The .Abox:hover class allows for the formmating of
+   the answer/option box when the user hovers their mouse over
+   it.
+*/
+.Abox:hover {
+    cursor: pointer;
+    background-color: rgba(255, 127, 0, 0.4);
+}
+
+/* .AText is used to select the formatting of the answer/option
+   text.
+*/
+.AText {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    color: white;
+    text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+    padding-left: 5px;
+    font-size: 12px;
+    height: 27px;
+    line-height: 27px;
+}
+
+/* The #bottom_container class is used to format the blank space
+   shown at the bottom of the survey creative.
+*/
+#bottom_container {
+    position: relative;
+}
+
+/* The #next_button class is used to format the button that is
+   shown at the bottom of a survey question page when that question
+   is multiple option as it allows the user to advancce to the next
+   question after all their selections are made.
+*/
+#next_button {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    position: absolute;
+    right: 8px;
+    top: -6px;
+    color: beige;
+    padding: 3px 15px;
+    text-shadow: rgba(0, 0, 0, 1) 1px 1px 1px;
+    background-color: rgba(255, 200, 0, 0.6);
+    cursor: pointer;
+}
+
+/* The #next_button:hover class is used to format the 'next' button
+   when the user hovers over it with their mouse.
+*/
+#next_button:hover {
+    background-color: rgba(255, 127, 80, 0.8);
+    color: white;
+}
+
+/* Unused */
+#question_comment {
+    color: #e8e7e7;
+    margin: 0 -2px 0 7px;
+    font-size: 13px;
+}
+
+/* The .thankyoucontainer class allows for formatting of the div
+   and its text that is shown at the end of the survey.
+*/
+.thankyoucontainer {
+    height: 100px;
+    width: 300px;
+    position: absolute;
+    top: 100px;
+    left: 0px;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 26px;
+    color: beige;
+    text-shadow: rgba(0, 0, 0, 0.8) 2px 2px 2px
+}
+</style>
+<script>
+    // Appends CSS content to the head of the site
+    function appendStyleSheet(id, content) {
+
+        if (!document.querySelector("#" + id)) {
+            var head = document.head || document.getElementsByTagName("head")[0];
+            head.appendChild(createStyleElement(id, content));
+            console.log(head);
+        }
+    }
+
+    // Creates the style element
+    function createStyleElement(id, content) {
+        var style = document.createElement("style");
+        style.type = "text/css";
+        style.id = id;
+        
+        if (style.styleSheet) {
+            style.styleSheet.cssText = content;
+        } else {
+            style.appendChild(document.createTextNode(content));
+        }
+        return style;
+    }
+
+    function removeStyles(el) {
+        el.removeAttribute('style');
+
+        if(el.childNodes.length > 0) {
+            for(let child in el.childNodes) {
+                /* filter element nodes only */
+                if(el.childNodes[child].nodeType == 1)
+                    removeStyles(el.childNodes[child]);
+            }
+        }
+    }
+    
+    function refreshFromCssSample() {
+        // remove all built-in styles
+        document.querySelectorAll('style')
+            .forEach(el => el.parentNode.removeChild(el));
+
+        // put back 'body style' (not shown in text box)
+        restore_body = 'body { \n' +
+                        'font-family: "Open Sans", sans-serif; \n' +
+                        'font-size: 13px;\n' +
+                        'margin: 0;\n' +
+                        '}\n\n';
+        appendStyleSheet('document.body', restore_body);
+
+        //append what's in the textarea form element
+        appendStyleSheet('document.body', custom_css.value);
+    }
+    
+    window.addEventListener("load", (event) => {
+        refreshFromCssSample();
+    });
+</script>
+<div class="container">
+  <form action="" method="post">
+    <input id="csrf_token" name="csrf_token" type="hidden" value="ImEyMTYzMjc1MWJjZjE1MmE1ODIzOWVmMGQ0MTQxOWM5NmZkM2I2OWMi.ZC3CLQ.vyOQ2fA1FAKcmRj3TbfQ2dXD5gw">
+    <p>
+      <label for="surveyname">Survey Name</label>
+      <input class="form-control" id="surveyname" name="surveyname" required type="text" value="">
+    </p>
+    <p>
+      <label for="surveytype">Survey Type</label>
+      <select class="form-control" id="surveytype" name="surveytype"><option value="brand_track">Brand Track</option><option value="brand_lift">Brand Lift</option></select>
+    </p>
+    <p>
+        <label for="language">Language</label>
+        <select class="form-control" id="language" name="language">
+            <option value="en">en</option>
+            <option value="es">es</option>
+            <option value="fr">fr</option>
+            <option value="ms">ms</option>
+            <option value="zh">zh</option>
+            <option value="ja">ja</option>
+            <option value="ko">ko</option>
+        </select>
+    </p>
+    <p>
+        <label for="responsetype">Response Type</label>
+        <select class="form-control" id="responsetype" name="responsetype">
+            <option value="Submit Responses at End of Survey">Submit Responses at End of Survey</option>
+            <option value="Submit Responses after each Question">Submit Responses after each Question</option>
+        </select>
+    </p>
+    <hr />
+    <table border='1' style='width:100%'>
+        <tr>
+            <td style='text-align:center;font-weight:bold'>
+               Survey Creative CSS
+            </td>
+            <td style='text-align:center;font-weight:bold'>
+               Example Survey
+            </td>
+        </tr>
+        <tr style='vertical-align:top;'>
+            <td style=''>
+                    <textarea class="form-control" id="custom_css" name="custom_css" rows="34" style="width:100%;height:100%">
+
+/* The .invisible class is used for hiding the &#39;Thank You&#39; message that
+   is not shown until the end of the survey questions.
+   It is probably best not to change this class.
+*/
+.invisible {
+    display: none;
+}
+
+.master_container {
+    border: 1px solid red;
+}
+
+/* The #master_container is the box containing all survey elements as a DIV.  
+   It contains the survey_container, the thankyou_container, and the bottom
+   container - all divs.
+*/
+#master_container {
+    background-color:#008000;
+    width: 300px;
+    height: 250px;
+    border: solid black 1px;
+}
+
+/* The #survey_container is the box (div) containing the question
+   container and all option_container_[0-4] divs.
+*/
+#survey_container {
+    padding: 7px;
+    padding-bottom: 3px;
+}
+
+/* .Qbox is the CSS class for controlling the look of the question
+   container, including the text of the question itself.
+*/
+.Qbox {
+    font-family: &#39;Open Sans&#39;, sans-serif;
+    font-size: 13px;
+    padding: 2px 5px;
+    height: 45px;
+    width: 274px;
+    border: 1px solid rgba(255, 255, 255, 0.290196);
+    border-radius: 5px;
+    color: white;
+    text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+    background-color: rgba(255, 255, 255, 0.14902);
+    box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 3px 0px;
+    display: table;
+}
+
+.Qbox span {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+/* .Abox is the CSS class for controlling the look of the option
+   containers (the answers) but does NOT including the formatting
+   of the answer/option text: that is in .AText
+*/
+.Abox {
+    border: 1px solid rgba(255, 255, 255, 0.290196);
+    border-radius: 5px;
+    text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+    background-color: rgba(255, 255, 255, 0.14902);
+    box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 3px 0px;
+    position: relative;
+    margin: 4px 0;
+}
+
+/* The .Abox[selected=&#34;true&#34;] class allows for the formmating of
+   the answer/option box if the user is using keyboard controls 
+   to manually select the answer.
+*/
+.Abox[selected=&#34;true&#34;] {
+    background-color: rgba(255, 127, 0, 0.7);
+}
+
+/* The .Abox:hover class allows for the formmating of
+   the answer/option box when the user hovers their mouse over
+   it.
+*/
+.Abox:hover {
+    cursor: pointer;
+    background-color: rgba(255, 127, 0, 0.4);
+}
+
+/* .AText is used to select the formatting of the answer/option
+   text.
+*/
+.AText {
+    font-family: &#39;Open Sans&#39;, sans-serif;
+    font-size: 13px;
+    color: white;
+    text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+    padding-left: 5px;
+    font-size: 12px;
+    height: 27px;
+    line-height: 27px;
+}
+
+/* The #bottom_container class is used to format the blank space
+   shown at the bottom of the survey creative.
+*/
+#bottom_container {
+    position: relative;
+}
+
+/* The #next_button class is used to format the button that is
+   shown at the bottom of a survey question page when that question
+   is multiple option as it allows the user to advancce to the next
+   question after all their selections are made.
+*/
+#next_button {
+    font-family: &#39;Open Sans&#39;, sans-serif;
+    font-size: 13px;
+    position: absolute;
+    right: 8px;
+    top: -6px;
+    color: beige;
+    padding: 3px 15px;
+    text-shadow: rgba(0, 0, 0, 1) 1px 1px 1px;
+    background-color: rgba(255, 200, 0, 0.6);
+    cursor: pointer;
+}
+
+/* The #next_button:hover class is used to format the &#39;next&#39; button
+   when the user hovers over it with their mouse.
+*/
+#next_button:hover {
+    background-color: rgba(255, 127, 80, 0.8);
+    color: white;
+}
+
+/* Unused */
+#question_comment {
+    color: #e8e7e7;
+    margin: 0 -2px 0 7px;
+    font-size: 13px;
+}
+
+/* The .thankyoucontainer class allows for formatting of the div
+   and its text that is shown at the end of the survey.
+*/
+.thankyoucontainer {
+    height: 100px;
+    width: 300px;
+    position: absolute;
+    top: 100px;
+    left: 0px;
+    text-align: center;
+    font-family: &#39;Open Sans&#39;, sans-serif;
+    font-size: 26px;
+    color: beige;
+    text-shadow: rgba(0, 0, 0, 0.8) 2px 2px 2px
+}
+</textarea>
+            </td>
+            <td style='width:50%;' align="center">
+                &nbsp;
+                <div id="master_container" style="margin:auto">
+                    <div id="survey_container">
+                        <div id="question_container" class="Qbox">
+                            <span id="question_text">
+                                Sample Question
+                            </span>
+                        </div>
+                        <div id="option_container_0" class="Abox">
+                            <div id="option_text_0" class="AText">opt1</div>
+                        </div>
+                        <div id="option_container_1" class="Abox">
+                            <div id="option_text_1" class="AText">opt2</div>
+                        </div>
+                        <div id="option_container_2" class="Abox">
+                            <div id="option_text_2" class="AText">opt3</div>
+                        </div>
+                        <div id="option_container_3" class="Abox">
+                            <div id="option_text_3" class="AText">opt4</div>
+                        </div>
+                        <!-- <div id="option_container_4" class="Abox">
+                            <div id="option_text_4" class="AText">opt5</div>
+                        </div> -->
+                    </div>
+                    <div id="thankyou_container" class="invisible">
+                        <div id="thankyou_text"></div>
+                    </div>
+                    <div id="bottom_container">
+                        <span id="question_comment"></span><span id="next_button">Next</span>
+                    </div>
+                </div>
+
+                <br><hr/>
+                <button style='font-size:14pt' type="button"
+                    onclick='refreshFromCssSample();'>Update Sample Based on CSS</button>
+                <hr/><br>
+
+                <img src='https://storage.cloud.google.com/admin-ui-images/survey_css_guide.png'
+                    alt='CSS guide' width='653' height='289'>
+            </td>
+        </tr>
+    </table>
+    <hr />
+    <div>
+      
+      <h3>Question 1</h3>
+      
+      <p>
+        <label for="question1">Question Text</label>
+        <input class="form-control" id="question1" name="question1" required type="text" value="">
+      </p>
+      <p>
+        <label for="question1type">Type</label>
+        <select class="form-control" id="question1type" name="question1type"><option value="SINGLE_OPTION">SINGLE_OPTION</option><option value="MULTIPLE_OPTION">MULTIPLE_OPTION</option></select>
+      </p>
+      <p>
+        <label for="question1order">Order</label>
+        <select class="form-control" id="question1order" name="question1order"><option value="SHUFFLED">Shuffled</option><option value="ORDERED">Ordered</option></select>
+      </p>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer1a">Answer A Text</label>
+          <input class="form-control" id="answer1a" name="answer1a" required type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer1anext">
+            Answer A Next Question
+          </label>
+          <input class="form-control" id="answer1anext" name="answer1anext" required type="text" value="end">
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer1b">Answer B Text</label>
+          <input class="form-control" id="answer1b" name="answer1b" required type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer1bnext">
+            Answer B Next Question
+          </label>
+          <input class="form-control" id="answer1bnext" name="answer1bnext" required type="text" value="end">
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer1c">Answer C Text</label>
+          <input class="form-control" id="answer1c" name="answer1c" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer1cnext">
+            Answer C Next Question
+          </label>
+          <input class="form-control" id="answer1cnext" name="answer1cnext" type="text" value="end">
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer1d">Answer D Text</label>
+          <input class="form-control" id="answer1d" name="answer1d" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer1dnext">
+            Answer D Next Question
+          </label>
+          <input class="form-control" id="answer1dnext" name="answer1dnext" type="text" value="end">
+        </div>
+      </div>
+      
+    </div>
+    <hr />
+    <div>
+      
+      <h3>Question 2</h3>
+      
+      <p>
+        <label for="question2">Question Text</label>
+        <input class="form-control" id="question2" name="question2" type="text" value="">
+      </p>
+      <p>
+        <label for="question2type">Type</label>
+        <select class="form-control" id="question2type" name="question2type"><option value="SINGLE_OPTION">SINGLE_OPTION</option><option value="MULTIPLE_OPTION">MULTIPLE_OPTION</option></select>
+      </p>
+      <p>
+        <label for="question2order">Order</label>
+        <select class="form-control" id="question2order" name="question2order"><option value="SHUFFLED">Shuffled</option><option value="ORDERED">Ordered</option></select>
+      </p>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer2a">Answer A Text</label>
+          <input class="form-control" id="answer2a" name="answer2a" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer2anext">
+            Answer A Next Question
+          </label>
+          <input class="form-control" id="answer2anext" name="answer2anext" type="text" value="end">
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer2b">Answer B Text</label>
+          <input class="form-control" id="answer2b" name="answer2b" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer2bnext">
+            Answer B Next Question
+          </label>
+          <input class="form-control" id="answer2bnext" name="answer2bnext" type="text" value="end">
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer2c">Answer C Text</label>
+          <input class="form-control" id="answer2c" name="answer2c" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer2cnext">
+            Answer C Next Question
+          </label>
+          <input class="form-control" id="answer2cnext" name="answer2cnext" type="text" value="end">
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer2d">Answer D Text</label>
+          <input class="form-control" id="answer2d" name="answer2d" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer2dnext">
+            Answer D Next Question
+          </label>
+          <input class="form-control" id="answer2dnext" name="answer2dnext" type="text" value="end">
+        </div>
+      </div>
+      
+    </div>
+    <hr />
+    <div>
+      
+      <h3>Question 3</h3>
+      
+      <p>
+        <label for="question3">Question Text</label>
+        <input class="form-control" id="question3" name="question3" type="text" value="">
+      </p>
+      <p>
+        <label for="question3type">Type</label>
+        <select class="form-control" id="question3type" name="question3type"><option value="SINGLE_OPTION">SINGLE_OPTION</option><option value="MULTIPLE_OPTION">MULTIPLE_OPTION</option></select>
+      </p>
+      <p>
+        <label for="question3order">Order</label>
+        <select class="form-control" id="question3order" name="question3order"><option value="SHUFFLED">Shuffled</option><option value="ORDERED">Ordered</option></select>
+      </p>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer3a">Answer A Text</label>
+          <input class="form-control" id="answer3a" name="answer3a" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer3anext">
+            Answer A Next Question
+          </label>
+          <input class="form-control" id="answer3anext" name="answer3anext" type="text" value="end">
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer3b">Answer B Text</label>
+          <input class="form-control" id="answer3b" name="answer3b" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer3bnext">
+            Answer B Next Question
+          </label>
+          <input class="form-control" id="answer3bnext" name="answer3bnext" type="text" value="end">
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer3c">Answer C Text</label>
+          <input class="form-control" id="answer3c" name="answer3c" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer3cnext">
+            Answer C Next Question
+          </label>
+          <input class="form-control" id="answer3cnext" name="answer3cnext" type="text" value="end">
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer3d">Answer D Text</label>
+          <input class="form-control" id="answer3d" name="answer3d" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer3dnext">
+            Answer D Next Question
+          </label>
+          <input class="form-control" id="answer3dnext" name="answer3dnext" type="text" value="end">
+        </div>
+      </div>
+      
+    </div>
+    <hr />
+    <div>
+      
+      <h3>Question 4</h3>
+      
+      <p>
+        <label for="question4">Question Text</label>
+        <input class="form-control" id="question4" name="question4" type="text" value="">
+      </p>
+      <p>
+        <label for="question4type">Type</label>
+        <select class="form-control" id="question4type" name="question4type"><option value="SINGLE_OPTION">SINGLE_OPTION</option><option value="MULTIPLE_OPTION">MULTIPLE_OPTION</option></select>
+      </p>
+      <p>
+        <label for="question4order">Order</label>
+        <select class="form-control" id="question4order" name="question4order"><option value="SHUFFLED">Shuffled</option><option value="ORDERED">Ordered</option></select>
+      </p>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer4a">Answer A Text</label>
+          <input class="form-control" id="answer4a" name="answer4a" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer4anext">
+            Answer A Next Question
+          </label>
+          <input class="form-control" id="answer4anext" name="answer4anext" type="text" value="end">
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer4b">Answer B Text</label>
+          <input class="form-control" id="answer4b" name="answer4b" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer4bnext">
+            Answer B Next Question
+          </label>
+          <input class="form-control" id="answer4bnext" name="answer4bnext" type="text" value="end">
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer4c">Answer C Text</label>
+          <input class="form-control" id="answer4c" name="answer4c" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer4cnext">
+            Answer C Next Question
+          </label>
+          <input class="form-control" id="answer4cnext" name="answer4cnext" type="text" value="end">
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        <div class="col-md-5">
+          <label for="answer4d">Answer D Text</label>
+          <input class="form-control" id="answer4d" name="answer4d" type="text" value="">
+        </div>
+        <div class="col-md-2">
+          <label for="answer4dnext">
+            Answer D Next Question
+          </label>
+          <input class="form-control" id="answer4dnext" name="answer4dnext" type="text" value="end">
+        </div>
+      </div>
+      
+    </div>
+    <hr />
+    <p>
+      <input class="btn btn-primary" id="submit" name="submit" type="submit" value="Submit">
+      <a href="/index" class="btn btn-default">Cancel</a>
+    </p>
+  </form>  
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </body>
+</html>

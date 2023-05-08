@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,11 @@ import numpy as np
 import pandas as pd
 import survey_collection
 from forms import BRAND_TRACK
-
+<<<<<<< HEAD
+from forms import DEFAULT_CSS
+=======
+from forms import RESPONSES_AT_END
+>>>>>>> 2ea5b06b1cbad8e3ac6a582a00314e7dd6d3cc2b
 
 def get_all():
   return survey_collection.get_all()
@@ -74,6 +78,13 @@ def zip_file(survey_id, survey_dict):
       'default_control', 'default_expose'
   ]
 
+  # In order to make the responsetype backward compatible we need to support
+  # surveys defined WITHOUT a responsetype and default them to RESPONSES_AT_END.
+  # Check to see if there's a key for answer type 'responsetype' and, if not,
+  # then this is an old survey. Insert a key:value pair for RESPONSES_AT_END.
+  if 'responsetype' not in survey_dict:
+    survey_dict['responsetype'] = RESPONSES_AT_END
+
   # create zip
   template_zips = write_html_template(survey_id, survey_dict, prefix_filename,
                                       seg_types)
@@ -113,13 +124,20 @@ def write_html_template(survey_id, survey_dict, prefix_filename, seg_types):
 
 
 def get_html_template(survey_id, survey_dict, seg_type):
+  if 'custom_css' in survey_dict:
+    custom_css = survey_dict['custom_css']
+  else:
+    custom_css = DEFAULT_CSS
+
   return render_template(
       'creative.html',
       survey=survey_dict,
       survey_id=survey_id,
       show_back_button=False,
+      response_type=survey_dict['responsetype'],
       all_question_json=get_question_json(survey_dict),
       seg=seg_type,
+      custom_css=custom_css,
       thankyou_text=get_thank_you_text(survey_dict),
       next_text=get_next_text(survey_dict),
       comment_text=get_comment_text(survey_dict))
@@ -208,6 +226,7 @@ def get_survey_responses(surveyid, client=None):
   google.cloud.bigquery.magics.context.use_bqstorage_api = True
   project_id = os.environ.get('PROJECT_ID')
   table_id = os.environ.get('TABLE_ID')
+
   if client is None:
     client = bigquery.Client(project=project_id)
   bqstorageclient = bigquery_storage.BigQueryReadClient()
@@ -224,35 +243,89 @@ def get_survey_responses(surveyid, client=None):
   return df
 
 
+def get_survey_responses_context(surveyid, client=None):
 
-# def get_response_count_from_survey(survey):
+  # include questions (look up in survey here and join in?) 
+  #
+  
+  """Get data from survey"""
+  google.cloud.bigquery.magics.context.use_bqstorage_api = True
+  project_id = os.environ.get('PROJECT_ID')
+  table_id = os.environ.get('TABLE_ID')
 
-#   """Get data from survey"""
-
-#   google.cloud.bigquery.magics.context.use_bqstorage_api = True
-#   project_id = os.environ.get('PROJECT_ID')
-#   table_id = os.environ.get('TABLE_ID')
-#   client = bigquery.Client(project=project_id)
-#   bqstorageclient = bigquery_storage.BigQueryReadClient()
-
-#   survey_id = (survey.to_dict())['survey_id']
-
-
-#   query = f"""
-#         SELECT CreatedAt, Segmentation, Response
-#         FROM `{table_id}`
-#         WHERE ID = @survey_id
-#     """
-#   job_config = bigquery.QueryJobConfig(query_parameters=[
-#       bigquery.ScalarQueryParameter('survey_id', 'STRING', surveyid),
-#   ])
-#   query_job = client.query(query, job_config=job_config)
-#   df = query_job.result().to_dataframe(bqstorage_client=bqstorageclient)
-#   return df.shape[0]
+  if client is None:
+    client = bigquery.Client(project=project_id)
+  bqstorageclient = bigquery_storage.BigQueryReadClient()
+  query = f"""
+        SELECT CreatedAt, Segmentation, Response
+        FROM `{table_id}`
+        WHERE ID = @survey_id
+    """
+  job_config = bigquery.QueryJobConfig(query_parameters=[
+      bigquery.ScalarQueryParameter('survey_id', 'STRING', surveyid),
+  ])
+  query_job = client.query(query, job_config=job_config)
+  df = query_job.result().to_dataframe(bqstorage_client=bqstorageclient)
+  return df
 
 
+def get_response_count_from_survey(survey):
+  """Get response count from survey"""
+  google.cloud.bigquery.magics.context.use_bqstorage_api = True
+  project_id = os.environ.get('PROJECT_ID')
+  table_id = os.environ.get('TABLE_ID')
+
+  client = bigquery.Client(project=project_id)
+  bqstorageclient = bigquery_storage.BigQueryReadClient()
+  survey_id = survey.id
+  query = f"""
+        SELECT
+            Segmentation,
+            EXTRACT(DATE FROM max(CreatedAt)) as max_date,
+            DATE_DIFF(CURRENT_DATE(), EXTRACT(DATE FROM max(CreatedAt)), DAY) AS days_since_response,
+            count(*) as response_count
+        FROM `{table_id}`
+        WHERE ID = @survey_id
+        GROUP BY 1
+    """
+
+  job_config = bigquery.QueryJobConfig(query_parameters=[
+      bigquery.ScalarQueryParameter('survey_id', 'STRING', survey_id),
+  ])
+  query_job = client.query(query, job_config=job_config)
+  df = query_job.result().to_dataframe(bqstorage_client=bqstorageclient)
+  converted_dict = df.to_dict('index')
+#   print(f"raw converted_dict: {converted_dict}")
+  return converted_dict
 
 def download_responses(surveyid):
+  """Download survey responses in a CSV format file."""
+  df = get_survey_responses(surveyid)
+  output = {'Date': [], 'Control/Expose': [], 'Dimension 2': []}
+  outputdf = pd.DataFrame(data=output)
+  outputdf['Date'] = df['CreatedAt'].values
+  outputdf['Control/Expose'] = df['Segmentation'].values
+  if df['Response'].any():
+    responselist = df['Response'].str.split(pat=('|'), expand=True)
+  else:
+    responselist = pd.DataFrame()
+  columns = list(responselist)
+  for i in columns:
+    responselist[i] = responselist[i].str.slice(start=2)
+  responselist = responselist.rename(
+      columns={
+          0: 'Response 1',
+          1: 'Response 2',
+          2: 'Response 3',
+          3: 'Response 4',
+          4: 'Response 5'
+      })
+  responselist = responselist.reset_index(drop=True)
+  outputdf = pd.concat([outputdf, responselist], axis=1)
+  csv = outputdf.to_csv(index=False)
+  return csv
+
+def download_responses_with_context(surveyid):
   """Download survey responses in a CSV format file."""
   df = get_survey_responses(surveyid)
   output = {'Date': [], 'Control/Expose': [], 'Dimension 2': []}
@@ -290,6 +363,10 @@ def get_thank_you_text(survey):
     thankyou_text = 'ありがとうございました'
   elif survey.get('language') == 'ko':
     thankyou_text = '고맙습니다'
+  elif survey.get('language') == 'fr':
+    thankyou_text = 'Merci'
+  elif survey.get('language') == 'es':
+    thankyou_text = 'Gracias'
   else:
     thankyou_text = 'Thank You'
   return thankyou_text
@@ -305,6 +382,10 @@ def get_next_text(survey):
     next_text = '次へ'
   elif survey.get('language') == 'ko':
     next_text = '다음에'
+  elif survey.get('language') == 'fr':
+    next_text = 'Suivante'
+  elif survey.get('language') == 'es':
+    next_text = 'Próxima'
   else:
     next_text = 'Next'
   return next_text
@@ -320,6 +401,10 @@ def get_comment_text(survey):
     comment_text = '当てはまるもの全て選択'
   elif survey.get('language') == 'ko':
     comment_text = '적용 가능한 모든 항목을 선택하십시오'
+  elif survey.get('language') == 'fr':
+    comment_text = "Choisissez tout ce qui s'applique"
+  elif survey.get('language') == 'es':
+    comment_text = 'Elige todas las aplicables'
   else:
     comment_text = 'Choose all applicable'
   return comment_text

@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,13 +21,177 @@ from flask_wtf import FlaskForm
 from wtforms import SelectField
 from wtforms import StringField
 from wtforms import SubmitField
+from wtforms import TextAreaField
 from wtforms.validators import DataRequired
 from wtforms.validators import ValidationError
+from wtforms.validators import Length
 
 BRAND_TRACK = 'brand_track'
 BRAND_LIFT = 'brand_lift'
 ANSWERS_ORDERED = 'ORDERED'
 ANSWERS_SHUFFLED = 'SHUFFLED'
+RESPONSES_AT_END = "Submit Responses at End of Survey"
+RESPONSES_IMMEDIATELY = "Submit Responses after each Question"
+
+# this is the default stylesheet for the custom creative
+DEFAULT_CSS = """
+/* The .invisible class is used for hiding the 'Thank You' message that
+   is not shown until the end of the survey questions.
+   It is probably best not to change this class.
+*/
+.invisible {
+    display: none;
+}
+
+.master_container {
+    border: 1px solid red;
+}
+
+/* The #master_container is the box containing all survey elements as a DIV.  
+   It contains the survey_container, the thankyou_container, and the bottom
+   container - all divs.
+*/
+#master_container {
+    background-color:#008000;
+    width: 300px;
+    height: 250px;
+    border: solid black 1px;
+}
+
+/* The #survey_container is the box (div) containing the question
+   container and all option_container_[0-4] divs.
+*/
+#survey_container {
+    padding: 7px;
+    padding-bottom: 3px;
+}
+
+/* .Qbox is the CSS class for controlling the look of the question
+   container, including the text of the question itself.
+*/
+.Qbox {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    padding: 2px 5px;
+    height: 45px;
+    width: 274px;
+    border: 1px solid rgba(255, 255, 255, 0.290196);
+    border-radius: 5px;
+    color: white;
+    text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+    background-color: rgba(255, 255, 255, 0.14902);
+    box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 3px 0px;
+    display: table;
+}
+
+.Qbox span {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+/* .Abox is the CSS class for controlling the look of the option
+   containers (the answers) but does NOT including the formatting
+   of the answer/option text: that is in .AText
+*/
+.Abox {
+    border: 1px solid rgba(255, 255, 255, 0.290196);
+    border-radius: 5px;
+    text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+    background-color: rgba(255, 255, 255, 0.14902);
+    box-shadow: rgba(0, 0, 0, 0.8) 0px 0px 3px 0px;
+    position: relative;
+    margin: 4px 0;
+}
+
+/* The .Abox[selected="true"] class allows for the formmating of
+   the answer/option box if the user is using keyboard controls 
+   to manually select the answer.
+*/
+.Abox[selected="true"] {
+    background-color: rgba(255, 127, 0, 0.7);
+}
+
+/* The .Abox:hover class allows for the formmating of
+   the answer/option box when the user hovers their mouse over
+   it.
+*/
+.Abox:hover {
+    cursor: pointer;
+    background-color: rgba(255, 127, 0, 0.4);
+}
+
+/* .AText is used to select the formatting of the answer/option
+   text.
+*/
+.AText {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    color: white;
+    text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
+    padding-left: 5px;
+    font-size: 12px;
+    height: 27px;
+    line-height: 27px;
+}
+
+/* The #bottom_container class is used to format the blank space
+   shown at the bottom of the survey creative.
+*/
+#bottom_container {
+    position: relative;
+}
+
+/* The #next_button class is used to format the button that is
+   shown at the bottom of a survey question page when that question
+   is multiple option as it allows the user to advancce to the next
+   question after all their selections are made.
+*/
+#next_button {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    position: absolute;
+    right: 8px;
+    top: -6px;
+    color: beige;
+    padding: 3px 15px;
+    text-shadow: rgba(0, 0, 0, 1) 1px 1px 1px;
+    background-color: rgba(255, 200, 0, 0.6);
+    cursor: pointer;
+}
+
+/* The #next_button:hover class is used to format the 'next' button
+   when the user hovers over it with their mouse.
+*/
+#next_button:hover {
+    background-color: rgba(255, 127, 80, 0.8);
+    color: white;
+}
+
+/* Unused */
+#question_comment {
+    color: #e8e7e7;
+    margin: 0 -2px 0 7px;
+    font-size: 13px;
+}
+
+/* The .thankyoucontainer class allows for formatting of the div
+   and its text that is shown at the end of the survey.
+*/
+.thankyoucontainer {
+    height: 100px;
+    width: 300px;
+    position: absolute;
+    top: 100px;
+    left: 0px;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 26px;
+    color: beige;
+    text-shadow: rgba(0, 0, 0, 0.8) 2px 2px 2px
+}
+"""
+
+# LANGUAGE_CHOICES = "'en', 'ms', 'zh', 'ja', 'ko'"
 
 def question_section_is_empty(form, questionNumber):
   """Check if any field of the question input including answer is empty."""
@@ -43,7 +207,6 @@ def validate_next_question(form, field):
   """Validate if the question is linked by any other question's answer."""
   questionNumberMatch = re.search('\d', field.name)
   questionNumber = questionNumberMatch.group()
-  print('validating for question: ' + questionNumber)
   for questionIndex in range(1, 6):
     for answerChoice in ['a', 'b', 'c', 'd']:
       answerFieldName = 'answer' + str(questionIndex) + answerChoice + 'next'
@@ -55,9 +218,14 @@ def validate_next_question(form, field):
             str(questionIndex) +
             ' linked to this question, please fill in this section')
 
+      # is 'end' not really 'end'?
+      if answerLinkData.lower() == 'end' and answerLinkData.lower() != 'end':
+        raise ValidationError("Syntax for end of survey is 'end' in lowercase, please fix.")
+
 
 class QuestionForm(FlaskForm):
   """QuestionForm that takes in the survey creation parameters."""
+
   question1type = SelectField(
       'question1Type', choices=('SINGLE_OPTION', 'MULTIPLE_OPTION'))
   question2type = SelectField(
@@ -68,17 +236,33 @@ class QuestionForm(FlaskForm):
       'question4Type', choices=('SINGLE_OPTION', 'MULTIPLE_OPTION'))
   question5type = SelectField(
       'question5Type', choices=('SINGLE_OPTION', 'MULTIPLE_OPTION'))
+
+  # default is 'shuffled'
   question_order_choices = [(ANSWERS_SHUFFLED, 'Shuffled'),
           (ANSWERS_ORDERED, 'Ordered')]
+
   question1order = SelectField('question1Order', choices=question_order_choices)
   question2order = SelectField('question2Order', choices=question_order_choices)
   question3order = SelectField('question3Order', choices=question_order_choices)
   question4order = SelectField('question4Order', choices=question_order_choices)
   question5order = SelectField('question5Order', choices=question_order_choices)
-  language = SelectField('language', choices=('en', 'ms', 'zh', 'ja', 'ko'))
+
+  language = SelectField('language', choices=('en', 'es', 'fr', 'ms', 'zh', 'ja', 'ko'))
+
+  # make BRAND_TRACK to be the default
   surveytype = SelectField('surveyType', choices=[(
-    BRAND_LIFT, 'Brand Lift'), (BRAND_TRACK, 'Brand Track')])
+    BRAND_TRACK, 'Brand Track'), (BRAND_LIFT, 'Brand Lift'), ])
+    
   surveyname = StringField('surveyName', validators=[DataRequired()])
+
+  # adding responseType as a property of the survey
+  responsetype = SelectField('responseType', choices=[
+    (RESPONSES_AT_END, 'Submit Responses at End of Survey'),
+    (RESPONSES_IMMEDIATELY, 'Submit Responses after each Question')])
+
+  # adding portion of form to customize creative
+  custom_css = TextAreaField('custom_css', default=DEFAULT_CSS)
+
   question1 = StringField('question1', validators=[DataRequired()])
   answer1a = StringField('answer1a', validators=[DataRequired()])
   answer1b = StringField('answer1b', validators=[DataRequired()])

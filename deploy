@@ -28,17 +28,15 @@ gcloud services enable cloudfunctions.googleapis.com
 
 # Deploy receiver endpoint.
 cd receiver
-
 echo -e "\n-- Create BigQuery dataset"
 bq --location=$LOCATION mk \
     --force \
     --dataset \
     --description "Main response data set for Brand-o-meter" \
     $PROJECT_ID:responses
-
 echo -e "\n-- Deploy Cloud Function for receiver"
 gcloud functions deploy receiver \
-    --runtime python37 \
+    --runtime python39 \
     --entry-point=receiver \
     --region=$LOCATION \
     --trigger-http \
@@ -47,32 +45,29 @@ gcloud functions deploy receiver \
 
 # Exit receiver dir.
 cd ..
-
 echo -e "\nSet up basic App Engine to allow firestore setup (if none exists)"
 if gcloud app services list; then
     echo "App Engine already configured. Continuing..."
 else
     gcloud app create --region=$REGION
 fi
-
 echo -e "\n-- Deploy firestore for survey configuration"
 gcloud firestore databases create --region=$REGION
+#gcloud firestore databases create --region=$LOCATION
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:$PROJECT_ID@appspot.gserviceaccount.com" \
     --role="roles/editor"
-gcloud iam service-accounts keys create ./$PROJECT_ID-credentials.json \
-    --iam-account=$PROJECT_ID@appspot.gserviceaccount.com
-
+#gcloud iam service-accounts keys create ./$PROJECT_ID-credentials.json \
+#    --iam-account=$PROJECT_ID@appspot.gserviceaccount.com
 # Setting authentication login services
 echo -e "\n-- Set your authentication login credentials"
 read -p 'Username: ' AUTH_USERNAME
 read -sp 'Password: ' AUTH_PASSWORD
 echo -e "\n-- Thank you, the authentication credentials has been set as $AUTH_USERNAME & $AUTH_PASSWORD"
-
 echo -e "\n-- Set up app engine config"
 sed -e "s/{{LOCATION}}/$LOCATION/" -e "s/{{PROJECT_ID}}/$PROJECT_ID/" -e "s/{{AUTH_USERNAME}}/$AUTH_USERNAME/" -e "s/{{AUTH_PASSWORD}}/$AUTH_PASSWORD/" creative/app/app.yaml.template >./creative/app/$PROJECT_ID.yaml
-
 echo -e "\n-- Deploy app engine"
+
 cd creative/app
 if ! gcloud app deploy ./$PROJECT_ID.yaml --quiet; then
     echo -e "\n-- ERROR: App Engine deployment failed. This is usually caused by a delay in project config rollout."
