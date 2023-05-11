@@ -25,11 +25,7 @@ import numpy as np
 import pandas as pd
 import survey_collection
 from forms import BRAND_TRACK
-<<<<<<< HEAD
-from forms import DEFAULT_CSS
-=======
 from forms import RESPONSES_AT_END
->>>>>>> 2ea5b06b1cbad8e3ac6a582a00314e7dd6d3cc2b
 
 def get_all():
   return survey_collection.get_all()
