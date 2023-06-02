@@ -301,9 +301,8 @@
                     }
                     else
                     {
-                        console.log('inside else of renderNextQuestion');
-                        if (surveyConfig.response_type == "Submit Responses after each Question") {
-                            console.log('inside inner if of renderNextQuestion');
+                        if (this.surveyConfig.response_type == 'Submit Responses after each Question') {
+                            // find a better method here that doesn't rewrite the bomid
                             this.sendCollectedResponseToServer();
                         }
                     }

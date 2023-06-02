@@ -188,11 +188,10 @@ def download_zip(survey_id):
   return send_file(
       data,
       mimetype='application/zip',
-    #   add_etags=False,
-    #   cache_timeout=0,
+      etag=False,
+      max_age=0,
       last_modified=datetime.datetime.now(),
       as_attachment=True,
-    #   attachment_filename=filename
       download_name=filename)
 
 
@@ -239,12 +238,7 @@ def reporting(survey_id):
 @app.context_processor
 def inject_receiver_params():
   return {
-      'receiver_url':
-          os.environ.get(
-              'RECEIVER_URL',
-            #   'https://us-central1-brandometer-devel-testing.cloudfunctions.net/receiver'
-              'https://us-central1-sonar-testing-379823.cloudfunctions.net/receiver'
-          )
+      'receiver_url': os.environ.get('RECEIVER_URL')
   }
 
 
