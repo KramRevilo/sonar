@@ -131,23 +131,6 @@
 
                 // Check cookie to get User ID or Drop a new one
                 getOrGenerateCookieId: function() {
-<<<<<<< HEAD
-                    // do we have an existing cookie on this machine?
-                    var cookieIdRegexMatch = /bomu=([^;]+)/.exec(document.cookie);
-
-                    // no cookie?  Create one and store in surveyConfig object.
-                    if (cookieIdRegexMatch == null)
-                        surveyConfig.cookie = this.setCookieId();
-                    // found a cookie? Use it and store in surveyConfig object.
-                    else
-                        surveyConfig.cookie = cookieIdRegexMatch[1];
-
-                    // return (cookieIdRegexMatch == null) ? this.setCookieId() :
-                    //     cookieIdRegexMatch[1];
-
-                    // return the cookie to use
-                    return surveyConfig.cookie;
-=======
                     // var cookieIdRegexMatch = /bomu=([^;]+)/.exec(document.cookie);
                     // return (cookieIdRegexMatch == null) ? this.setCookieId() :
                     //     cookieIdRegexMatch[1];
@@ -164,7 +147,6 @@
                         window.cookie = cookieIdRegexMatch[1]
 
                     return window.cookie;
->>>>>>> 2ea5b06b1cbad8e3ac6a582a00314e7dd6d3cc2b
                 },
 
                 setCookieId: function() {
@@ -319,14 +301,9 @@
                     }
                     else
                     {
-<<<<<<< HEAD
                         console.log('inside else of renderNextQuestion');
                         if (surveyConfig.response_type == "Submit Responses after each Question") {
                             console.log('inside inner if of renderNextQuestion');
-=======
-                        if (this.surveyConfig.response_type == 'Submit Responses after each Question') {
-                            // find a better method here that doesn't rewrite the bomid
->>>>>>> 2ea5b06b1cbad8e3ac6a582a00314e7dd6d3cc2b
                             this.sendCollectedResponseToServer();
                         }
                     }

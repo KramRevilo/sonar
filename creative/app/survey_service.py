@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Various imports to be used for survey functionalites."""
 import datetime
 import io
@@ -25,11 +26,8 @@ import numpy as np
 import pandas as pd
 import survey_collection
 from forms import BRAND_TRACK
-<<<<<<< HEAD
 from forms import DEFAULT_CSS
-=======
 from forms import RESPONSES_AT_END
->>>>>>> 2ea5b06b1cbad8e3ac6a582a00314e7dd6d3cc2b
 
 def get_all():
   return survey_collection.get_all()
@@ -235,9 +233,9 @@ def get_survey_responses(surveyid, client=None):
         FROM `{table_id}`
         WHERE ID = @survey_id
     """
-  job_config = bigquery.QueryJobConfig(query_parameters=[
-      bigquery.ScalarQueryParameter('survey_id', 'STRING', surveyid),
-  ])
+  job_config = bigquery.QueryJobConfig(
+      query_parameters=[bigquery.ScalarQueryParameter(
+          'survey_id','STRING',surveyid)])
   query_job = client.query(query, job_config=job_config)
   df = query_job.result().to_dataframe(bqstorage_client=bqstorageclient)
   return df
@@ -266,6 +264,16 @@ def get_survey_responses_context(surveyid, client=None):
   ])
   query_job = client.query(query, job_config=job_config)
   df = query_job.result().to_dataframe(bqstorage_client=bqstorageclient)
+
+  # look up the questions by survey
+  # need to get survey from survey_id
+  
+  # survey_doc = None
+  # survey_doc = get_by_id(surveyid)
+  # if survey_doc is not None:
+  #   questions_json = get_question_json(survey_doc):
+  #   print(questions_json)
+
   return df
 
 
@@ -327,7 +335,39 @@ def download_responses(surveyid):
 
 def download_responses_with_context(surveyid):
   """Download survey responses in a CSV format file."""
+  # get a dataframe of the survey responses
   df = get_survey_responses(surveyid)
+
+  # Set the question texts to default values in case we can't talk to
+  # the Firestore DB
+  question1 = 'Response 1'
+  question2 = 'Response 2'
+  question3 = 'Response 3'
+  question4 = 'Response 4'
+  question5 = 'Response 5'
+
+  # Get the survey document object using the convenience function.
+  survey_doc = get_doc_by_id(surveyid)
+  # Did we get a good document back?
+  if survey_doc.exists:
+    # convert the document into a dictionary
+    survey_info = survey_doc.to_dict()
+
+    # Set variables for question1-5 to the values from the Firestore DB
+    # by walking the dictionary items and looking for well-known named
+    # keys that are used for the questions
+    for key, value in survey_info.items():
+      if key == 'question1':
+        question1 = survey_info.get(key)
+      elif key == 'question2':
+        question2 = survey_info.get(key)
+      elif key == 'question3':
+        question3 = survey_info.get(key)
+      elif key == 'question4':
+        question4 = survey_info.get(key)
+      elif key == 'question5':
+        question5 = survey_info.get(key)
+
   output = {'Date': [], 'Control/Expose': [], 'Dimension 2': []}
   outputdf = pd.DataFrame(data=output)
   outputdf['Date'] = df['CreatedAt'].values
@@ -341,11 +381,11 @@ def download_responses_with_context(surveyid):
     responselist[i] = responselist[i].str.slice(start=2)
   responselist = responselist.rename(
       columns={
-          0: 'Response 1',
-          1: 'Response 2',
-          2: 'Response 3',
-          3: 'Response 4',
-          4: 'Response 5'
+          0: question1,
+          1: question2,
+          2: question3,
+          3: question4,
+          4: question5
       })
   responselist = responselist.reset_index(drop=True)
   outputdf = pd.concat([outputdf, responselist], axis=1)

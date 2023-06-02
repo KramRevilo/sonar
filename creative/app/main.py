@@ -44,13 +44,13 @@ basic_auth = BasicAuth(app)
 app.config['BASIC_AUTH_FORCE'] = True
 
 ACTIVE_DAYS = 3
-ACTIVE_COLOR = 'MediumSeaGreen'
+ACTIVE_COLOR = '#5cb85c'
 ACTIVE_TEXT = 'Active'
 WARNING_DAYS = 14
-WARNING_COLOR = 'Orange'
+WARNING_COLOR = '#f0ac4f'
 WARNING_TEXT = 'Stale'
 OLD_DAYS = 14
-OLD_COLOR = 'Tomato'
+OLD_COLOR = '#d9534f'
 OLD_TEXT = 'Timed Out'
 
 MRC_INIT = 999999999
@@ -205,6 +205,7 @@ def download_responses(survey_id):
         csv,
         mimetype='text/csv',
         headers={'Content-disposition': 'attachment; filename=surveydata.csv'})
+
 
 @app.route('/survey/download_responses_context/<string:survey_id>', methods=['GET'])
 def download_responses_context(survey_id):
