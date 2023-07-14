@@ -199,13 +199,17 @@ function sortTable(n,table_id) {
                             <span class="glyphicon glyphicon glyphicon-compressed" aria-hidden="true"></span>
                         </button>
                     </a>
-                    <a href="{{ url_for('download_responses', survey_id=survey.id) }}">
-                        <button type="button" class="btn btn-info" title="Download Responses">
+                    
+                        <!-- <a href="{{ url_for('download_responses', survey_id=survey.id) }}"> -->
+                        <a href="javascript:void(0)">
+                            <button type="button" disabled class="btn btn-info" title="Download Responses">
                             <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
                         </button>
                     </a>
-                    <a href="{{ url_for('download_responses_context', survey_id=survey.id) }}">
-                        <button type="button" class="btn btn-warning" title="Download Responses with Context">
+
+                        <!-- <a href="{{ url_for('download_responses_context', survey_id=survey.id) }}"> -->
+                        <a href="javascript:void(0)">
+                            <button type="button" disabled class="btn btn-warning" title="Download Responses with Context">
                             <span class="glyphicon glyphicon glyphicon-download-alt" aria-hidden="true"></span>
                         </button>
                     </a> 

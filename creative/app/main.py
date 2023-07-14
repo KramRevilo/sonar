@@ -13,8 +13,12 @@
 # limitations under the License.
 """Import of required packages/libraries."""
 
+# OS imports
 import datetime
 import os
+import datetime
+
+# Flask imports
 from flask import flash
 from flask import Flask
 from flask import redirect
@@ -25,15 +29,16 @@ from flask import send_file
 from flask import url_for
 from flask_basicauth import BasicAuth
 from flask_bootstrap import Bootstrap
+
+# local file imports
 import forms
 from forms import BRAND_TRACK
 from forms import DEFAULT_CSS
 import survey_service
-import datetime
 from forms import RESPONSES_AT_END
 from forms import RESPONSES_IMMEDIATELY
 
-
+# Project setup
 title = 'Sonar'
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'supersecretkey'
@@ -43,6 +48,7 @@ app.config['BASIC_AUTH_PASSWORD'] = os.environ.get('AUTH_PASSWORD')
 basic_auth = BasicAuth(app)
 app.config['BASIC_AUTH_FORCE'] = True
 
+# Project constants
 ACTIVE_DAYS = 3
 ACTIVE_COLOR = '#5cb85c'
 ACTIVE_TEXT = 'Active'
@@ -52,7 +58,6 @@ WARNING_TEXT = 'Stale'
 OLD_DAYS = 14
 OLD_COLOR = '#d9534f'
 OLD_TEXT = 'Timed Out'
-
 MRC_INIT = 999999999
 
 
