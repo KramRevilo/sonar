@@ -242,10 +242,7 @@ def get_survey_responses(surveyid, client=None):
 
 
 def get_survey_responses_context(surveyid, client=None):
-
-  # include questions (look up in survey here and join in?) 
-  #
-  
+ 
   """Get data from survey"""
   google.cloud.bigquery.magics.context.use_bqstorage_api = True
   project_id = os.environ.get('PROJECT_ID')
@@ -265,15 +262,30 @@ def get_survey_responses_context(surveyid, client=None):
   query_job = client.query(query, job_config=job_config)
   df = query_job.result().to_dataframe(bqstorage_client=bqstorageclient)
 
-  # look up the questions by survey
-  # need to get survey from survey_id
-  
-  # survey_doc = None
-  # survey_doc = get_by_id(surveyid)
-  # if survey_doc is not None:
-  #   questions_json = get_question_json(survey_doc):
-  #   print(questions_json)
+  return df
 
+def get_all_response_counts():
+  google.cloud.bigquery.magics.context.use_bqstorage_api = True
+  project_id = os.environ.get('PROJECT_ID')
+  table_id = os.environ.get('TABLE_ID')
+  client = bigquery.Client(project=project_id)
+  bqstorageclient = bigquery_storage.BigQueryReadClient()
+
+  query = f"""
+    SELECT
+        ID,
+        Segmentation,
+        EXTRACT(DATE FROM max(CreatedAt)) as max_date,
+        DATE_DIFF(CURRENT_DATE(), EXTRACT(DATE FROM max(CreatedAt)), DAY) AS days_since_response,
+        count(*) as response_count
+    FROM `sonar-testing-379823.responses.responses`
+    WHERE ID is not null
+    GROUP BY 1,2
+    ORDER BY 1,2
+    """
+   
+  query_job = client.query(query)
+  df = query_job.result().to_dataframe(bqstorage_client=bqstorageclient)
   return df
 
 
@@ -303,7 +315,6 @@ def get_response_count_from_survey(survey):
   query_job = client.query(query, job_config=job_config)
   df = query_job.result().to_dataframe(bqstorage_client=bqstorageclient)
   converted_dict = df.to_dict('index')
-#   print(f"raw converted_dict: {converted_dict}")
   return converted_dict
 
 def download_responses(surveyid):

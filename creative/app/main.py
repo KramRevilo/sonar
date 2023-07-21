@@ -58,6 +58,7 @@ WARNING_TEXT = 'Stale'
 OLD_DAYS = 14
 OLD_COLOR = '#d9534f'
 OLD_TEXT = 'Timed Out'
+INDETERMINATE_COLOR = '#a0a0a0'
 MRC_INIT = 999999999
 
 
@@ -70,19 +71,27 @@ def root():
 def index():
   all_surveys = survey_service.get_all()
   stat_array = []
+  tmp_stats = survey_service.get_all_response_counts()
+  
   for survey in all_surveys:
-    segmentation_rows = survey_service.get_response_count_from_survey(survey)
+    # filter down to just this survey.id in DataFrame & convert into a dict
+    df = tmp_stats.loc[tmp_stats["ID"]==survey.id]
+    segmentation_rows = df.to_dict()
 
     # set high number for last update
     most_recent_change = MRC_INIT
-    # build an array with stats for each segmentation, support up to 6 segments
+
+    # build an array with stats for each segmentation
     segs = []
-    for x in range(0,6):
-        if x in segmentation_rows:
-            a = segmentation_rows[x]
-            if a['days_since_response'] < most_recent_change:
-                most_recent_change = a['days_since_response']
-            segs.append(a)
+    for x in segmentation_rows['ID']:
+        a = {'Segmentation':segmentation_rows['Segmentation'][x],
+             'response_count':segmentation_rows['response_count'][x],
+             'days_since_response':segmentation_rows['days_since_response'][x] }
+
+        if segmentation_rows['days_since_response'][x] < most_recent_change:
+            most_recent_change = segmentation_rows['days_since_response'][x]
+
+        segs.append(a)
 
     if most_recent_change <= ACTIVE_DAYS:
         color = ACTIVE_COLOR
@@ -90,9 +99,11 @@ def index():
     elif most_recent_change <= WARNING_DAYS:
         color = WARNING_COLOR
         status_text = WARNING_TEXT
-    else:
+    elif most_recent_change > WARNING_DAYS:
         color = OLD_COLOR
         status_text = OLD_TEXT
+    else:
+        color = INDETERMINATE_COLOR
 
     if most_recent_change == MRC_INIT:
         most_recent_change = 'No responses'
