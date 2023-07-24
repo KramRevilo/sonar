@@ -22,6 +22,18 @@ def get_all():
   return survey_collection.stream()
 
 
+def get_active():
+  filter_1 = FieldFilter("archived", "!=", True)
+  # cannot query by a field when it doesn't exist
+  # like in the case of an old Firestore schema being upgraded  :-(
+  filter_2 = FieldFilter("archived", "!=", True)
+
+  # Create the union filter of the two filters (queries)
+  or_filter = Or(filters=[filter_1, filter_2])
+
+  return (db.collection(u"Surveys").where(filter=or_filter).stream())
+
+
 def get_by_id(survey_id):
   return survey_collection.document(survey_id)
 

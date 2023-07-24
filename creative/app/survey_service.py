@@ -273,17 +273,16 @@ def get_all_response_counts():
 
   query = f"""
     SELECT
-        ID,
-        Segmentation,
-        EXTRACT(DATE FROM max(CreatedAt)) as max_date,
-        DATE_DIFF(CURRENT_DATE(), EXTRACT(DATE FROM max(CreatedAt)), DAY) AS days_since_response,
-        count(*) as response_count
-    FROM `sonar-testing-379823.responses.responses`
+    ID,
+    Segmentation,
+    EXTRACT(DATE FROM max(CreatedAt)) as max_date,
+    DATE_DIFF(CURRENT_DATE(), EXTRACT(DATE FROM max(CreatedAt)), DAY) AS days_since_response,
+    count(*) as response_count
+    FROM `{table_id}`
     WHERE ID is not null
     GROUP BY 1,2
     ORDER BY 1,2
     """
-   
   query_job = client.query(query)
   df = query_job.result().to_dataframe(bqstorage_client=bqstorageclient)
   return df
