@@ -13,8 +13,11 @@
 # limitations under the License.
 """Importing Google Firestore for survey storage."""
 from google.cloud import firestore
+# from google.cloud import firestore_v1
 
 db = firestore.Client()
+# this creates a global containing ALL surveys from the
+# firebase datastore
 survey_collection = db.collection(u'Surveys')
 
 
@@ -23,18 +26,23 @@ def get_all():
 
 
 def get_active():
+  global db, survey_collection
+
   filter_1 = FieldFilter("archived", "!=", True)
   # cannot query by a field when it doesn't exist
   # like in the case of an old Firestore schema being upgraded  :-(
-  filter_2 = FieldFilter("archived", "!=", True)
+  # filter_2 = FieldFilter("archived", "!=", True)
 
   # Create the union filter of the two filters (queries)
-  or_filter = Or(filters=[filter_1, filter_2])
+  #or_filter = Or(filters=[filter_1, filter_2])
 
-  return (db.collection(u"Surveys").where(filter=or_filter).stream())
+  #(db.collection(u"Surveys").where(filter=or_filter).stream())
+  return (db.collection(u"Surveys").where(filter=filter_1).stream())
 
 
 def get_by_id(survey_id):
+  global survey_collection
+
   return survey_collection.document(survey_id)
 
 
@@ -44,16 +52,22 @@ def get_doc_by_id(survey_id):
 
 
 def delete_by_id(survey_id):
+  global survey_collection
+
   survey_collection.document(survey_id).delete()
 
 
 def update_by_id(survey_id, data):
+  global db, survey_collection
+
   ref = survey_collection.document(survey_id)
   ref.update(data)
   return ref
 
 
 def create(data):
+  global survey_collection
+
   ref = survey_collection.document()
   ref.set(data)
   return ref
