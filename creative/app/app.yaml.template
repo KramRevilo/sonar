@@ -8,3 +8,11 @@ env_variables:
   TABLE_ID: "{{PROJECT_ID}}.responses.responses"
   AUTH_USERNAME: "{{AUTH_USERNAME}}"
   AUTH_PASSWORD: "{{AUTH_PASSWORD}}"
+
+handlers:
+- url: /favicon\.ico
+  static_files: favicon.ico
+  upload: favicon\.ico
+- url: /favicon\.png
+  static_files: favicon.png
+  upload: favicon\.png

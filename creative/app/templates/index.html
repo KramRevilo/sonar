@@ -1,80 +1,56 @@
 {% extends "base.html" %} 
 {% block scripts %}
+
 <script>
-function sortTable(n,table_id) {
-    var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+function sortTableRowsByColumn( table, columnIndex, ascending ) {
+    const rows = Array.from( table.querySelectorAll( ':scope > tbody > tr' ) );
+    rows.sort( ( x, y ) => {
+        const xValue = x.cells[columnIndex].textContent;
+        const yValue = y.cells[columnIndex].textContent;
+        var xNum = 0;
+        var yNum = 0;
 
-    if (!table_id)
-        table = document.getElementById("myTable2");
-    else
-    table = document.getElementById(table_id);
+        if (isNaN(parseInt(xValue.trim())))
+            xNum = parseInt(xValue.trim().toLowerCase().charCodeAt(0));
+        else
+            xNum = parseInt(xValue.trim());
 
-    switching = true;
-    // Set the sorting direction to ascending:
-    dir = "asc";
+        if (isNaN(parseInt(yValue.trim())))
+            yNum = parseInt(yValue.trim().toLowerCase().charCodeAt(0));
+        else
+            yNum = parseInt(yValue.trim());
 
-    console.log("start SortTable");
-    
-    /* Make a loop that will continue until
-    no switching has been done: */
-    while (switching) {
-        // Start by saying: no switching is done:
-        switching = false;
-        rows = table.rows;
-        /* Loop through all table rows (except the
-        first, which contains table headers): */
-        for (i = 1; i < (rows.length - 1); i++) {
-            // Start by saying there should be no switching:
-            shouldSwitch = false;
-            /* Get the two elements you want to compare,
-            one from current row and one from the next: */
-            x = rows[i].getElementsByTagName("TD")[n];
-            y = rows[i + 1].getElementsByTagName("TD")[n];
+        return ascending ? ( xNum - yNum ) : ( yNum - xNum );
+    } );
 
-            console.log("rows["+String(i)+"] x=" +x.innerHTML.toLowerCase().trim()+" rows["+String(i+1)+"] y="+y.innerHTML.toLowerCase().trim());
-
-            /* Check if the two rows should switch place,
-            based on the direction, asc or desc: */
-
-            if (dir == "asc") {
-                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                    // If so, mark as a switch and break the loop:
-                    shouldSwitch = true;
-                    break;
-                    }
-            } else if (dir == "desc") {
-                if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                    // If so, mark as a switch and break the loop:
-                    shouldSwitch = true;
-                    break;
-                }
-            }
-        }
-        if (shouldSwitch) {
-            /* If a switch has been marked, make the switch
-            and mark that a switch has been done: */
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true;
-            // Each time a switch is done, increase this count by 1:
-            switchcount ++;
-        } else {
-            /* If no switching has been done AND the direction is "asc",
-            set the direction to "desc" and run the while loop again. */
-            if (switchcount == 0 && dir == "asc") {
-                dir = "desc";
-                switching = true;
-            }
-        }
+    const fragment = new DocumentFragment();
+    for( let row of rows ) {
+        fragment.appendChild( row );
     }
+    table.tBodies[0].appendChild( fragment );
+}
+
+function onColumnHeaderClicked(ev) {
+    var th = ev.currentTarget;
+    var table = th.closest('table');
+    var thIndex = Array.from(th.parentElement.children).indexOf(th);
+    var ascending = th.dataset.sort != 'asc';
+    sortTableRowsByColumn(table, thIndex, ascending);
+    var allTh = table.querySelectorAll(':scope > thead > tr > th');
+    for (var _i = 0, allTh_1 = allTh; _i < allTh_1.length; _i++) {
+        var th2 = allTh_1[_i];
+        delete th2.dataset['sort'];
+    }
+    th.dataset['sort'] = ascending ? 'asc' : 'desc';
 }
 </script>
+
 <style>
     .table_header {
         text-shadow: rgba(0, 0, 0, 0.8) 1px 1px 1px;
         background-color:#337ab7;        
         vertical-align: middle;
         font-size: 10pt;
-        cursor: pointer;
         text-align :center;
         color :white; 
     }
@@ -101,24 +77,21 @@ function sortTable(n,table_id) {
         <thead class="thead-light">
             <tr style='text-align:center;background-color:#337ab7;color:white;vertical-align: middle;'>
                 <div style="cursor:pointer">
-                    <th scope="col" class="table_header" style="width:250px;"
-                        onclick="sortTable(0,'mainTable')">Survey Name</th>
-                    <th scope="col" class="table_header" style="width:150px;"
-                        onclick="sortTable(1,'mainTable')">Survey ID</th>
-                    <th scope="col" class="table_header"
-                        onclick="sortTable(2,'mainTable')">Survey Questions</th>
-                    <th scope="col" class="table_header" style="width:50px;"
-                        onclick="sortTable(3,'mainTable')">View</th>
-		            <th scope="col" class="table_header" style="width:50px;"
-                        onclick="sortTable(4,'mainTable')">Response Count (segment:count)</th>
-		            <th scope="col" class="table_header" style="width:75px;"
-                        onclick="sortTable(5,'mainTable')">Last Response (days)</th>
-		            <th scope="col" class="table_header"
-                        onclick="sortTable(6,'mainTable')">Status</th>
-                    <th scope="col" class="table_header" style="width:75px;"
-                        onclick="sortTable(7,'mainTable')">Download</th>
-                    <th scope="col" class="table_header" style="width:50px;"
-                        onclick="sortTable(8,'mainTable')">Actions</th>
+                    <th scope="col" class="table_header" style="width:250px;cursor:pointer;" 
+                        onclick="onColumnHeaderClicked(event)">Survey Name</th>
+                    <th scope="col" class="table_header" style="width:150px;cursor:pointer;" 
+                        onclick="onColumnHeaderClicked(event)">Survey ID</th>
+                    <th scope="col" class="table_header" style="cursor:pointer;"
+                        onclick="onColumnHeaderClicked(event)">Survey Questions</th>
+                    <th scope="col" class="table_header" style="width:50px;">View</th>
+		            <th scope="col" class="table_header" style="width:50px;cursor:pointer;"
+                        onclick="onColumnHeaderClicked(event)">Response Count (segment:count)</th>
+		            <th scope="col" class="table_header" style="width:75px;cursor:pointer;"
+                        onclick="onColumnHeaderClicked(event)">Last Response (days)</th>
+		            <th scope="col" class="table_header" style="cursor:pointer;"
+                        onclick="onColumnHeaderClicked(event)">Status</th>
+                    <th scope="col" class="table_header" style="width:75px;">Download</th>
+                    <th scope="col" class="table_header" style="width:50px;">Actions</th>
                 </div>                
             </tr>
         </thead>
