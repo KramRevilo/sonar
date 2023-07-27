@@ -10,15 +10,19 @@ function sortTableRowsByColumn( table, columnIndex, ascending ) {
         var xNum = 0;
         var yNum = 0;
 
-        if (isNaN(parseInt(xValue.trim())))
-            xNum = parseInt(xValue.trim().toLowerCase().charCodeAt(0));
-        else
-            xNum = parseInt(xValue.trim());
+        if (isNaN(parseInt(xValue.trim())) || isNaN(parseInt(yValue.trim()))) {
+            xNum = parseInt(xValue.trim().toLowerCase().charCodeAt(0)) << 16;
+            xNum += parseInt(xValue.trim().toLowerCase().charCodeAt(1)) << 8;
+            xNum += parseInt(xValue.trim().toLowerCase().charCodeAt(2));
 
-        if (isNaN(parseInt(yValue.trim())))
-            yNum = parseInt(yValue.trim().toLowerCase().charCodeAt(0));
-        else
+            yNum = parseInt(yValue.trim().toLowerCase().charCodeAt(0)) << 16;
+            yNum += parseInt(yValue.trim().toLowerCase().charCodeAt(1)) << 8;
+            yNum += parseInt(yValue.trim().toLowerCase().charCodeAt(2));
+        }
+        else {
+            xNum = parseInt(xValue.trim());
             yNum = parseInt(yValue.trim());
+        }
 
         return ascending ? ( xNum - yNum ) : ( yNum - xNum );
     } );
