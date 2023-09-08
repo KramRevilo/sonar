@@ -35,6 +35,10 @@ RESPONSES_IMMEDIATELY = "Submit Responses after each Question"
 
 # this is the default stylesheet for the custom creative
 DEFAULT_CSS = """
+body {
+    margin: 0;
+    display: block;
+}
 /* The .invisible class is used for hiding the 'Thank You' message that
    is not shown until the end of the survey questions.
    It is probably best not to change this class.
