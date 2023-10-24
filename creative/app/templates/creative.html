@@ -151,7 +151,7 @@
 
                 setCookieId: function() {
                     var cookieId = this.uuidv4();
-                    document.cookie = 'bomu=' + cookieId + '; path=/; domain=.mdn.net;';
+                    document.cookie = 'bomu=' + cookieId + '; path=/; SameSite=None; Secure=True; domain=.';
                     return cookieId;
                 },
 
