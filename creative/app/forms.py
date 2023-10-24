@@ -189,6 +189,13 @@ DEFAULT_CSS = """
     color: beige;
     text-shadow: rgba(0, 0, 0, 0.8) 2px 2px 2px
 }
+
+body {
+    margin:0 auto;
+    display:block;
+
+}
+
 """
 
 # LANGUAGE_CHOICES = "'en', 'ms', 'zh', 'ja', 'ko'"
