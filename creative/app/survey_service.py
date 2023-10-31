@@ -403,58 +403,200 @@ def download_responses_with_context(surveyid):
   return csv
 
 
+#def get_thank_you_text(survey):
+#  """Multi-language support input for thank you text."""
+#  if survey.get('language') == 'ms':
+#    thankyou_text = 'Terima Kasih'
+#  elif survey.get('language') == 'zh':
+#    thankyou_text = '谢谢'
+#  elif survey.get('language') == 'ja':
+#    thankyou_text = 'ありがとうございました'
+#  elif survey.get('language') == 'ko':
+#    thankyou_text = '고맙습니다'
+#  elif survey.get('language') == 'fr':
+#    thankyou_text = 'Merci'
+#  elif survey.get('language') == 'es':
+#    thankyou_text = 'Gracias'
+#  else:
+#    thankyou_text = 'Thank You'
+#  return thankyou_text
+
+
 def get_thank_you_text(survey):
   """Multi-language support input for thank you text."""
-  if survey.get('language') == 'ms':
-    thankyou_text = 'Terima Kasih'
-  elif survey.get('language') == 'zh':
-    thankyou_text = '谢谢'
-  elif survey.get('language') == 'ja':
-    thankyou_text = 'ありがとうございました'
-  elif survey.get('language') == 'ko':
-    thankyou_text = '고맙습니다'
-  elif survey.get('language') == 'fr':
-    thankyou_text = 'Merci'
-  elif survey.get('language') == 'es':
-    thankyou_text = 'Gracias'
-  else:
-    thankyou_text = 'Thank You'
+
+  language_codes = {
+    'ms': 'Terima Kasih',
+    'zh': '谢谢',
+    'ja': 'ありがとうございました',
+    'ko': '고맙습니다',
+    'fr': 'Merci',
+    'es': 'Gracias',
+    'de': 'Danke',
+    'it': 'Grazie',
+    'pt': 'Obrigado',
+    'ru': 'Спасибо',
+    'ar': 'شكرا',
+    'hi': 'धन्यवाद',
+    'tr': 'Teşekkür ederim',
+    'vi': 'Cảm ơn',
+    'pl': 'Dziękuję',
+    'id': 'Terima kasih',
+    'th': 'ขอบคุณ',
+    'tl': 'Salamat',
+    'nl': 'Dankjewel',
+    'da': 'Tak',
+    'fi': 'Kiitos',
+    'el': 'Ευχαριστώ',
+    'he': 'תודה',
+    'sv': 'Tack',
+    'hu': 'Köszönet',
+    'cs': 'Děkuji',
+    'no': 'Takk',
+    'uk': 'Дякую',
+    'fa': 'متشکرم',
+    'ur': 'شکریہ',
+    'ml': 'നന്ദി',
+    'ta': 'நன்றி',
+    'te': 'ధన్యవాదాలు',
+    'kn': 'ಧನ್ಯವಾದಗಳು',
+    'gu': 'ધન્યવાદ',
+    'mr': 'धन्यवाद',
+    'bn': 'ধন্যবাদ'
+  }
+
+  language_code = survey.get('language')
+  thankyou_text = language_codes.get(language_code) or 'Thank You'
   return thankyou_text
 
+# def get_next_text(survey):
+#   """Multi-language support input for next text."""
+#   if survey.get('language') == 'ms':
+#     next_text = 'Next'
+#   elif survey.get('language') == 'zh':
+#     next_text = '下一个'
+#   elif survey.get('language') == 'ja':
+#     next_text = '次へ'
+#   elif survey.get('language') == 'ko':
+#     next_text = '다음에'
+#   elif survey.get('language') == 'fr':
+#     next_text = 'Suivante'
+#   elif survey.get('language') == 'es':
+#     next_text = 'Próxima'
+#   else:
+#     next_text = 'Next'
+#   return next_text
 
 def get_next_text(survey):
   """Multi-language support input for next text."""
-  if survey.get('language') == 'ms':
-    next_text = 'Next'
-  elif survey.get('language') == 'zh':
-    next_text = '下一个'
-  elif survey.get('language') == 'ja':
-    next_text = '次へ'
-  elif survey.get('language') == 'ko':
-    next_text = '다음에'
-  elif survey.get('language') == 'fr':
-    next_text = 'Suivante'
-  elif survey.get('language') == 'es':
-    next_text = 'Próxima'
-  else:
-    next_text = 'Next'
+
+  language_codes = {
+    'ms': 'Berikutnya',
+    'zh': '下一个',
+    'ja': '次へ',
+    'ko': '다음에',
+    'fr': 'Suivante',
+    'es': 'Próxima',
+    'de': 'Weiter',
+    'it': 'Avanti',
+    'pt': 'Próximo',
+    'ru': 'Следующий',
+    'ar': 'التالي',
+    'hi': 'अगला',
+    'tr': 'Sonraki',
+    'vi': 'Kế tiếp',
+    'pl': 'Następny',
+    'id': 'Berikutnya',
+    'th': 'ถัดไป',
+    'tl': 'Susunod',
+    'nl': 'Volgende',
+    'da': 'Næste',
+    'fi': 'Seuraava',
+    'el': 'Επόμενο',
+    'he': 'הבא',
+    'sv': 'Nästa',
+    'hu': 'Következő',
+    'cs': 'Další',
+    'no': 'Neste',
+    'uk': 'Наступний',
+    'fa': 'بعد',
+    'ur': 'اگلے',
+    'ml': 'അടുത്തത്',
+    'ta': 'அடுத்த',
+    'te': 'తర్వాత',
+    'kn': 'ಮುಂದಿನ',
+    'gu': 'આગળ',
+    'mr': 'पुढील',
+    'bn': 'পরবর্তী'
+  }
+
+  language_code = survey.get('language')
+  next_text = language_codes.get(language_code) or 'Next'
   return next_text
+
+
+# def get_comment_text(survey):
+#   """Multi-language support input for comment text."""
+#   if survey.get('language') == 'ms':
+#     comment_text = 'Pilih semua yang berkenaan'
+#   elif survey.get('language') == 'zh':
+#     comment_text = '选择所有适用的'
+#   elif survey.get('language') == 'ja':
+#     comment_text = '当てはまるもの全て選択'
+#   elif survey.get('language') == 'ko':
+#     comment_text = '적용 가능한 모든 항목을 선택하십시오'
+#   elif survey.get('language') == 'fr':
+#     comment_text = "Choisissez tout ce qui s'applique"
+#   elif survey.get('language') == 'es':
+#     comment_text = 'Elige todas las aplicables'
+#   else:
+#     comment_text = 'Choose all applicable'
+#   return comment_text
 
 
 def get_comment_text(survey):
   """Multi-language support input for comment text."""
-  if survey.get('language') == 'ms':
-    comment_text = 'Pilih semua yang berkenaan'
-  elif survey.get('language') == 'zh':
-    comment_text = '选择所有适用的'
-  elif survey.get('language') == 'ja':
-    comment_text = '当てはまるもの全て選択'
-  elif survey.get('language') == 'ko':
-    comment_text = '적용 가능한 모든 항목을 선택하십시오'
-  elif survey.get('language') == 'fr':
-    comment_text = "Choisissez tout ce qui s'applique"
-  elif survey.get('language') == 'es':
-    comment_text = 'Elige todas las aplicables'
-  else:
-    comment_text = 'Choose all applicable'
+
+  language_codes = {
+    'ms': 'Pilih semua yang berkenaan',
+    'zh': '选择所有适用的',
+    'ja': '当てはまるもの全て選択',
+    'ko': '적용 가능한 모든 항목을 선택하십시오',
+    'fr': "Choisissez tout ce qui s'applique",
+    'es': 'Elige todas las aplicables',
+    'de': 'Wählen Sie alle zutreffenden aus.',
+    'it': 'Seleziona tutte le opzioni applicabili.',
+    'pt': 'Escolha todas as opções aplicáveis.',
+    'ru': 'Выберите все подходящие.',
+    'ar': 'اختر كل ما ينطبق.',
+    'hi': 'सभी लागू विकल्प चुनें.',
+    'tr': 'Uygun olan tüm seçenekleri seçin.',
+    'vi': 'Chọn tất cả các tùy chọn áp dụng.',
+    'pl': 'Wybierz wszystkie odpowiednie opcje.',
+    'id': 'Pilih semua opsi yang berlaku.',
+    'th': 'เลือกตัวเลือกทั้งหมดที่ใช้ได้',
+    'tl': 'Piliin ang lahat ng naaangkop na opsyon.',
+    'nl': 'Selecteer alle van toepassing zijnde opties.',
+    'da': 'Vælg alle relevante muligheder.',
+    'fi': 'Valitse kaikki soveltuvat vaihtoehdot.',
+    'el': 'Επιλέξτε όλες τις σχετικές επιλογές.',
+    'he': 'בחר את כל האפשרויות הרלוונטיות.',
+    'sv': 'Välj alla relevanta alternativ.',
+    'hu': 'Válassza ki az összes releváns lehetőséget.',
+    'cs': 'Vyberte všechny relevantní možnosti.',
+    'no': 'Velg alle relevante alternativer.',
+    'uk': 'Виберіть усі відповідні варіанти.',
+    'fa': 'همه گزینه های مربوطه را انتخاب کنید.',
+    'ur': 'تمام متعلقہ اختیارات کا انتخاب کریں۔',
+    'ml': 'എല്ലാ ബാധകമായ ഓപ്ഷനുകളും തിരഞ്ഞെടുക്കുക.',
+    'ta': 'அனைத்து பொருத்தமான விருப்பங்களையும் தேர்வு செய்யவும்.',
+    'te': 'అన్ని వర్తించే ఎంపికలను ఎంచుకోండి.',
+    'kn': 'ಎಲ್ಲಾ ಅನ್ವಯಿಸುವ ಆಯ್ಕೆಗಳನ್ನು ಆರಿಸಿ.',
+    'gu': '모든 해당 옵션을 선택하세요.',
+    'mr': 'सर्व लागू पर्याय निवडा.',
+    'bn': 'সभी প্রযোজ্য বিকল্পগুলি নির্বাচন করুন।'
+  }
+
+  language_code = survey.get('language')
+  comment_text = language_codes.get(language_code) or 'Choose all applicable'
   return comment_text
