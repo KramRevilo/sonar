@@ -185,7 +185,14 @@ def get_question_json(survey):
 
 
 def get_brand_lift_results(surveyid):
-  df = get_survey_responses(surveyid)
+  table_id = os.environ.get('TABLE_ID')
+  query = f"""
+        SELECT CreatedAt, Segmentation, Response
+        FROM `{table_id}`
+        WHERE ID = @survey_id
+        AND NOT STARTS_WITH(Response, '1:|')
+    """
+  df = get_survey_responses(surveyid, query)
   if df['Response'].any():
     responselist = df['Response'].str.split(pat=('|'), expand=True)
   else:
@@ -219,20 +226,15 @@ def get_brand_lift_results(surveyid):
   return output
 
 
-def get_survey_responses(surveyid, client=None):
+def get_survey_responses(surveyid, query, client=None):
   """Get data from survey"""
   google.cloud.bigquery.magics.context.use_bqstorage_api = True
   project_id = os.environ.get('PROJECT_ID')
-  table_id = os.environ.get('TABLE_ID')
+  # table_id = os.environ.get('TABLE_ID')
 
   if client is None:
     client = bigquery.Client(project=project_id)
   bqstorageclient = bigquery_storage.BigQueryReadClient()
-  query = f"""
-        SELECT CreatedAt, Segmentation, Response
-        FROM `{table_id}`
-        WHERE ID = @survey_id
-    """
   job_config = bigquery.QueryJobConfig(
       query_parameters=[bigquery.ScalarQueryParameter(
           'survey_id','STRING',surveyid)])
@@ -255,6 +257,7 @@ def get_survey_responses_context(surveyid, client=None):
         SELECT CreatedAt, Segmentation, Response
         FROM `{table_id}`
         WHERE ID = @survey_id
+        AND NOT STARTS_WITH(Response, '1:|')
     """
   job_config = bigquery.QueryJobConfig(query_parameters=[
       bigquery.ScalarQueryParameter('survey_id', 'STRING', surveyid),
@@ -318,7 +321,14 @@ def get_response_count_from_survey(survey):
 
 def download_responses(surveyid):
   """Download survey responses in a CSV format file."""
-  df = get_survey_responses(surveyid)
+  table_id = os.environ.get('TABLE_ID')
+  query = f"""
+        SELECT CreatedAt, Segmentation, Response
+        FROM `{table_id}`
+        WHERE ID = @survey_id
+        AND NOT STARTS_WITH(Response, '1:|')
+    """
+  df = get_survey_responses(surveyid, query)
   output = {'Date': [], 'Control/Expose': [], 'Dimension 2': []}
   outputdf = pd.DataFrame(data=output)
   outputdf['Date'] = df['CreatedAt'].values
@@ -346,7 +356,14 @@ def download_responses(surveyid):
 def download_responses_with_context(surveyid):
   """Download survey responses in a CSV format file."""
   # get a dataframe of the survey responses
-  df = get_survey_responses(surveyid)
+  table_id = os.environ.get('TABLE_ID')
+  query = f"""
+        SELECT CreatedAt, Segmentation, Response
+        FROM `{table_id}`
+        WHERE ID = @survey_id
+        AND NOT STARTS_WITH(Response, '1:|')
+    """
+  df = get_survey_responses(surveyid, query)
 
   # Set the question texts to default values in case we can't talk to
   # the Firestore DB
