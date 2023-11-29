@@ -179,14 +179,14 @@ function onColumnHeaderClicked(ev) {
                     
                         <a href="{{ url_for('download_responses', survey_id=survey.id) }}">
                         <!-- <a href="javascript:void(0)"> -->
-                            <button type="button" disabled class="btn btn-info" title="Download Responses">
+                            <button type="button" class="btn btn-info" title="Download Responses">
                             <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
                         </button>
                     </a>
 
                         <a href="{{ url_for('download_responses_context', survey_id=survey.id) }}">
                         <!-- <a href="javascript:void(0)"> -->
-                            <button type="button" disabled class="btn btn-warning" title="Download Responses with Context">
+                            <button type="button" class="btn btn-warning" title="Download Responses with Context">
                             <span class="glyphicon glyphicon glyphicon-download-alt" aria-hidden="true"></span>
                         </button>
                     </a> 
