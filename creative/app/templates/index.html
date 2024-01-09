@@ -1,7 +1,8 @@
 {% extends "base.html" %} 
 {% block scripts %}
 
-<script>
+<script src="{{url_for('static', filename='sortable.js')}}"></script>
+<!-- <script>
 function sortTableRowsByColumn( table, columnIndex, ascending ) {
     const rows = Array.from( table.querySelectorAll( ':scope > tbody > tr' ) );
     rows.sort( ( x, y ) => {
@@ -47,7 +48,7 @@ function onColumnHeaderClicked(ev) {
     }
     th.dataset['sort'] = ascending ? 'asc' : 'desc';
 }
-</script>
+</script> -->
 
 <style>
     .table_header {
@@ -77,23 +78,23 @@ function onColumnHeaderClicked(ev) {
 
 {% block content %}
 <div class="container">
-    <table id="mainTable" class="table table-bordered table-striped">
+    <table data-sortable id="mainTable" class="table table-bordered table-striped">
         <thead class="thead-light">
             <tr style='text-align:center;background-color:#337ab7;color:white;vertical-align: middle;'>
                 <div style="cursor:pointer">
                     <th scope="col" class="table_header" style="width:250px;cursor:pointer;" 
-                        onclick="onColumnHeaderClicked(event)">Survey Name</th>
+                        >Survey Name</th>
                     <th scope="col" class="table_header" style="width:150px;cursor:pointer;" 
-                        onclick="onColumnHeaderClicked(event)">Survey ID</th>
+                        >Survey ID</th>
                     <th scope="col" class="table_header" style="cursor:pointer;"
-                        onclick="onColumnHeaderClicked(event)">Survey Questions</th>
+                        >Survey Questions</th>
                     <th scope="col" class="table_header" style="width:50px;">View</th>
 		            <th scope="col" class="table_header" style="width:50px;cursor:pointer;"
-                        onclick="onColumnHeaderClicked(event)">Response Count (segment:count)</th>
+                        >Response Count (segment:count)</th>
 		            <th scope="col" class="table_header" style="width:75px;cursor:pointer;"
-                        onclick="onColumnHeaderClicked(event)">Last Response (days)</th>
+                        >Last Response (days)</th>
 		            <th scope="col" class="table_header" style="cursor:pointer;"
-                        onclick="onColumnHeaderClicked(event)">Status</th>
+                        >Status</th>
                     <th scope="col" class="table_header" style="width:75px;">Download</th>
                     <th scope="col" class="table_header" style="width:50px;">Actions</th>
                 </div>                
