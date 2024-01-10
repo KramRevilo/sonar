@@ -106,7 +106,7 @@ def index():
         color = INDETERMINATE_COLOR
 
     if most_recent_change == MRC_INIT:
-        most_recent_change = 'No responses'
+        most_recent_change = -1
 
     stat_array.append({'id':survey.id,'stats':segs,'color':color,'last_change':most_recent_change,'status':status_text})
 
