@@ -197,9 +197,18 @@ body {
 body {
     margin:0 auto;
     display:block;
-
 }
 
+/*
+remove display:none; to make it visible
+*/
+#sonar_logo {
+    position:absolute;
+    left:120px;
+    width:100px;
+    height:20px;
+    display:none;
+}
 """
 
 # LANGUAGE_CHOICES = "'en', 'ms', 'zh', 'ja', 'ko'"
