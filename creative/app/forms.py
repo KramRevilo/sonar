@@ -201,13 +201,15 @@ body {
 
 /*
 remove display:none; to make it visible
+change sonar-white to sonar-black for dark logo. make sure it's not capitalized.
 */
-#sonar_logo {
+#sonar_logo_image {
     position:absolute;
-    left:120px;
+    left:130px;
     width:100px;
     height:20px;
     display:none;
+    content: url("https://storage.googleapis.com/admin-ui-images/sonar-white.png");
 }
 """
 
