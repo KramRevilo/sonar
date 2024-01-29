@@ -155,7 +155,7 @@ body {
     font-size: 13px;
     position: absolute;
     right: 8px;
-    top: -6px;
+    top: 0px;
     color: beige;
     padding: 3px 15px;
     text-shadow: rgba(0, 0, 0, 1) 1px 1px 1px;
