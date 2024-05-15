@@ -1,6 +1,7 @@
-runtime: python39
+runtime: python312
+api_version: 1
 
-instance_class: F2
+instance_class: F4
 
 env_variables:
   RECEIVER_URL: "https://{{LOCATION}}-{{PROJECT_ID}}.cloudfunctions.net/receiver"

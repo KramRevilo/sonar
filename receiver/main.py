@@ -35,9 +35,8 @@ from google.cloud.exceptions import NotFound
 
 def receiver(request):
   params = {}
-  params.update(request.get_json() or {})
+  # params.update(request.get_json(force=True, silent=False) or {})
   params.update(request.args or {})
-
   client = bigquery.Client()
   table_id = os.environ.get("TABLE_ID")
 
