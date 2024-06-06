@@ -204,7 +204,7 @@ remove display:none; to make it visible
 change sonar-white to sonar-black for dark logo. make sure it's not capitalized.
 */
 #ad_text {
-    margin-left: 100px;
+    text-align: center;
     color: black;
 }
 #ad_background {
