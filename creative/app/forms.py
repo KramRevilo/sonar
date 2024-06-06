@@ -203,8 +203,12 @@ body {
 remove display:none; to make it visible
 change sonar-white to sonar-black for dark logo. make sure it's not capitalized.
 */
-#advertisement_note {
-    position:relative;
+#ad_text {
+    margin-left: 100px;
+    color: black;
+}
+#ad_background {
+    background-color: red;
 }
 """
 
