@@ -205,10 +205,13 @@ change sonar-white to sonar-black for dark logo. make sure it's not capitalized.
 */
 #ad_text {
     text-align: center;
-    color: black;
+    color: #006200;
+    font-size: 5px;
 }
 #ad_background {
-    background-color: red;
+    position: absolute;
+    background-color: #007600;
+    width: 300px;
 }
 """
 
