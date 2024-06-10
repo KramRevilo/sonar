@@ -200,18 +200,22 @@ body {
 }
 
 /*
-remove display:none; to make it visible
-change sonar-white to sonar-black for dark logo. make sure it's not capitalized.
+add display:none; to make it invisible
 */
 #ad_text {
     text-align: center;
-    color: #006200;
+    color: rgba(0, 98, 0, 0.5);
     font-size: 5px;
 }
+/*
+If less than 5 answers, it is better to use position: relative; 
+With 5 answers position: relative; will push Next button out of the box. 
+Use position: absolute; with 5 answers that has multiple options
+*/
 #ad_background {
     position: absolute;
-    background-color: #007600;
-    width: 300px;
+    background-color: rgba(0, 118, 0, 0.5);
+    width: 299px;
 }
 """
 
