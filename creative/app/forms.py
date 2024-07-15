@@ -201,21 +201,21 @@ body {
 
 /*
 add display:none; to make it invisible
-*/
-#ad_text {
-    text-align: center;
-    color: rgba(0, 98, 0, 0.5);
-    font-size: 5px;
-}
-/*
+
 If less than 5 answers, it is better to use position: relative; 
 With 5 answers position: relative; will push Next button out of the box. 
 Use position: absolute; with 5 answers that has multiple options
 */
 #ad_background {
+    display:none;
     position: absolute;
     background-color: rgba(0, 118, 0, 0.5);
     width: 299px;
+}
+#ad_text {
+    text-align: center;
+    color: rgba(0, 98, 0, 0.5);
+    font-size: 5px;
 }
 """
 
