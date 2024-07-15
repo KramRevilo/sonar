@@ -72,7 +72,7 @@ def receiver(request):
       "Response": params.get("response"),
       "Visual": params.get("visual"),
       "CreativeSize": params.get("creative_size"),
-      "RandomTimeStamp": params.get("randomtimestamp"),
+      "RandomTimeStamp": abs(hash(request.remote_addr)),
       "BomID": params.get("bomid"),
   }
 
