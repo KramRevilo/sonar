@@ -28,6 +28,7 @@
 import logging
 import datetime
 import os
+import hashlib
 
 from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
@@ -72,7 +73,7 @@ def receiver(request):
       "Response": params.get("response"),
       "Visual": params.get("visual"),
       "CreativeSize": params.get("creative_size"),
-      "RandomTimeStamp": abs(hash(request.remote_addr)),
+      "RandomTimeStamp": hashlib.sha256(f"{request.remote_addr}".encode('utf-8')).hexdigest(),
       "BomID": params.get("bomid"),
   }
 
